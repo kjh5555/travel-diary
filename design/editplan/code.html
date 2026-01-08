@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>여정 편집 화면</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans KR", "sans-serif"],
+                        "sans": ["Plus Jakarta Sans", "Noto Sans KR", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0d181b] dark:text-white min-h-screen flex flex-col">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e7f0f3] dark:border-gray-800 bg-white dark:bg-[#1a2c32] px-10 py-3 shadow-sm">
+<div class="flex items-center gap-4 text-[#0d181b] dark:text-white">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-3xl">flight_takeoff</span>
+</div>
+<h2 class="text-[#0d181b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">트래블 다이어리</h2>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
+<a class="hover:text-primary transition-colors" href="#">대시보드</a>
+<a class="text-primary" href="#">내 여행</a>
+<a class="hover:text-primary transition-colors" href="#">둘러보기</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 size-2 bg-red-500 rounded-full border-2 border-white dark:border-[#1a2c32]"></span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-offset-2 ring-primary/20 dark:ring-offset-[#1a2c32]" data-alt="User profile picture showing a smiling traveler" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAd4TnDsQkMcMNyOByb3YbUwrZHHRLYU2LTIis6Cer8r7-GMzP5UGScDOMNIYrn5ObcEaoprLrQM7Pikeg5r_I7DBBocEzqYp_XiGY5vizpEGKb9RskQlmi3D6efe08B1587nE_4TPJfGWw6QmOrMB5eTofT_5sV8voM1cnSx65vO7cmMj4ZvWAPJ6-JRhGmdFRY-Tap5n5JNP1N0J7WbCnJcSRiSfLbPC3S6djlKHcIheorL5d-SjjNiMHpWX35hq1q7eYuJSZoYY");'></div>
+</div>
+</div>
+</header>
+<div class="layout-container flex h-full grow flex-col px-4 md:px-10 py-6 max-w-[1440px] mx-auto w-full">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div class="flex flex-col gap-2">
+<div class="flex flex-wrap gap-2 text-sm">
+<a class="text-slate-500 hover:text-primary font-medium leading-normal" href="#">내 여행</a>
+<span class="text-slate-400 font-medium leading-normal">/</span>
+<span class="text-[#0d181b] dark:text-white font-medium leading-normal">여정 편집</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-[#0d181b] dark:text-white">일정 편집</h1>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-lg h-10 px-6 border border-[#e7f0f3] bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 dark:bg-[#1a2c32] dark:border-gray-700 dark:text-slate-200 dark:hover:bg-gray-800 transition-colors">
+                취소
+            </button>
+<button class="flex items-center gap-2 justify-center rounded-lg h-10 px-6 bg-primary text-white font-bold text-sm hover:bg-sky-500 shadow-md shadow-primary/20 transition-all">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                저장하기
+            </button>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1a2c32] p-6 rounded-xl shadow-sm border border-[#e7f0f3] dark:border-gray-800 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+<div class="md:col-span-6 lg:col-span-5">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">여행 제목</label>
+<div class="relative">
+<input class="w-full h-12 rounded-lg border-slate-200 bg-slate-50 px-4 text-base focus:border-primary focus:ring-primary dark:bg-[#131f24] dark:border-gray-700 dark:text-white transition-shadow" placeholder="예: 제주도 여름 휴가" type="text" value="제주도 모험"/>
+<span class="material-symbols-outlined absolute right-4 top-3 text-slate-400">edit</span>
+</div>
+</div>
+<div class="md:col-span-6 lg:col-span-4">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">일정 날짜</label>
+<div class="flex items-center gap-2">
+<div class="relative flex-1">
+<input class="w-full h-12 rounded-lg border-slate-200 bg-slate-50 px-4 text-base focus:border-primary focus:ring-primary dark:bg-[#131f24] dark:border-gray-700 dark:text-white text-slate-600" type="date" value="2023-10-24"/>
+</div>
+<span class="text-slate-400 font-medium">-</span>
+<div class="relative flex-1">
+<input class="w-full h-12 rounded-lg border-slate-200 bg-slate-50 px-4 text-base focus:border-primary focus:ring-primary dark:bg-[#131f24] dark:border-gray-700 dark:text-white text-slate-600" type="date" value="2023-10-28"/>
+</div>
+</div>
+</div>
+<div class="md:col-span-12 lg:col-span-3 flex justify-end md:justify-start">
+<button class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                    동행자 추가
+                </button>
+</div>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-8 relative items-start h-full flex-1">
+<div class="w-full lg:w-7/12 xl:w-2/3 flex flex-col gap-8">
+<div class="flex flex-col group/day">
+<div class="flex items-center justify-between mb-4 sticky top-[72px] z-20 bg-background-light dark:bg-background-dark py-2">
+<div class="flex items-center gap-3">
+<div class="bg-primary text-white font-bold px-3 py-1 rounded-md text-sm shadow-md shadow-primary/20">1일차</div>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">10월 24일 (화)</h3>
+<span class="text-slate-400 text-sm">• 제주시 &amp; 동부 해안</span>
+</div>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="relative pl-4 ml-3 border-l-2 border-dashed border-slate-200 dark:border-gray-700 space-y-6 pb-6">
+<div class="relative bg-white dark:bg-[#1a2c32] rounded-xl p-5 shadow-sm border border-[#e7f0f3] dark:border-gray-800 hover:shadow-md transition-shadow group/card">
+<div class="absolute -left-[23px] top-6 size-4 bg-white dark:bg-[#1a2c32] border-2 border-primary rounded-full z-10"></div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center gap-1 min-w-[70px] pt-1 border-r border-slate-100 dark:border-gray-700 pr-4">
+<span class="text-lg font-bold text-slate-800 dark:text-white">09:00</span>
+<span class="text-xs font-medium text-slate-400">오전</span>
+</div>
+<div class="flex-1 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-bold text-slate-800 dark:text-white text-lg">제주공항 도착</h4>
+<div class="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                            제주국제공항
+                                        </div>
+</div>
+<div class="opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-2">
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-md text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-md text-slate-400 hover:text-red-500">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<div class="bg-slate-50 dark:bg-[#131f24] rounded-lg p-3 text-sm text-slate-600 dark:text-slate-300">
+                                    롯데렌터카 차량 인수. 예약번호 #49283.
+                                </div>
+</div>
+</div>
+</div>
+<div class="relative flex items-center ml-10">
+<div class="absolute -left-[45px] top-1/2 -translate-y-1/2 flex items-center justify-center size-6 bg-slate-100 dark:bg-gray-800 rounded-full text-slate-400">
+<span class="material-symbols-outlined text-[14px]">directions_car</span>
+</div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-gray-800 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400">
+<span>차량 이동 약 35분</span>
+<span class="text-slate-300">•</span>
+<span class="text-primary font-bold">18 km</span>
+</div>
+</div>
+<div class="relative bg-white dark:bg-[#1a2c32] rounded-xl p-5 shadow-sm border border-[#e7f0f3] dark:border-gray-800 hover:shadow-md transition-shadow group/card">
+<div class="absolute -left-[23px] top-6 size-4 bg-white dark:bg-[#1a2c32] border-2 border-primary rounded-full z-10"></div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center gap-1 min-w-[70px] pt-1 border-r border-slate-100 dark:border-gray-700 pr-4">
+<span class="text-lg font-bold text-slate-800 dark:text-white">10:30</span>
+<span class="text-xs font-medium text-slate-400">오전</span>
+</div>
+<div class="flex-1 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-bold text-slate-800 dark:text-white text-lg">함덕 해수욕장</h4>
+<div class="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                            조천읍 함덕리
+                                        </div>
+</div>
+<div class="opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-2">
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-md text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-md text-slate-400 hover:text-red-500">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<div class="flex gap-3 bg-slate-50 dark:bg-[#131f24] rounded-lg p-2 items-center">
+<div class="size-16 rounded-md bg-cover bg-center shrink-0" data-alt="Turquoise water and white sand beach in Jeju" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRCS9UMCkAcKHGM8prSaOgSdZoNS1L0U0bQkOhezv3kC5_kTxfw5rjZMQHtvci5at93r2lT_rGAixgPp0t4lqiPWJEfHU-I24YZrEWiSl6E2PSh0C2Hf4U12sl8o81OAFphBpSdPLmQPmDgDeRmkit6VD5eA8s5DRobzN6lb8xklFU3qkzlq-8JFS3GP4OcUQnDhH3DXmd11qb-yrah0gnVnDXfa0SzCFwBN5t_FJkXpLZ0jKgNLfj_fUmsvHHKr2TINSxuuxP5MY");'></div>
+<div class="flex flex-col gap-1 overflow-hidden">
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">유명한 에메랄드빛 해변</span>
+<div class="flex items-center gap-1 text-yellow-500 text-xs">
+<span class="material-symbols-outlined text-[14px] fill-current">star</span>
+<span class="font-bold text-slate-700 dark:text-slate-300">4.8</span>
+<span class="text-slate-400">(1,204)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="relative flex items-center ml-10">
+<div class="absolute -left-[45px] top-1/2 -translate-y-1/2 flex items-center justify-center size-6 bg-slate-100 dark:bg-gray-800 rounded-full text-slate-400">
+<span class="material-symbols-outlined text-[14px]">directions_walk</span>
+</div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-gray-800 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400">
+<span>도보 약 10분</span>
+</div>
+</div>
+<div class="relative bg-white dark:bg-[#1a2c32] rounded-xl p-5 shadow-sm border border-[#e7f0f3] dark:border-gray-800 hover:shadow-md transition-shadow group/card">
+<div class="absolute -left-[23px] top-6 size-4 bg-white dark:bg-[#1a2c32] border-2 border-primary rounded-full z-10"></div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center gap-1 min-w-[70px] pt-1 border-r border-slate-100 dark:border-gray-700 pr-4">
+<span class="text-lg font-bold text-slate-800 dark:text-white">12:30</span>
+<span class="text-xs font-medium text-slate-400">오후</span>
+</div>
+<div class="flex-1 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-bold text-slate-800 dark:text-white text-lg">카페 델문도에서 점심</h4>
+<div class="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 mt-1">
+<span class="material-symbols-outlined text-[16px]">restaurant</span>
+                                            오션뷰 베이커리 카페
+                                        </div>
+</div>
+<div class="opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-2">
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-md text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-md text-slate-400 hover:text-red-500">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<button class="relative w-full border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-xl p-4 flex items-center justify-center gap-2 text-slate-500 hover:text-primary hover:border-primary hover:bg-primary/5 transition-all group">
+<div class="absolute -left-[23px] top-1/2 -translate-y-1/2 size-4 bg-slate-300 dark:bg-gray-700 rounded-full z-10 group-hover:bg-primary transition-colors"></div>
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-bold">활동 추가</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col opacity-60 hover:opacity-100 transition-opacity">
+<div class="flex items-center justify-between mb-4 py-2 border-t border-slate-200 dark:border-gray-700 pt-6">
+<div class="flex items-center gap-3">
+<div class="bg-slate-200 dark:bg-gray-700 text-slate-600 dark:text-slate-300 font-bold px-3 py-1 rounded-md text-sm">2일차</div>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">10월 25일 (수)</h3>
+<span class="text-slate-400 text-sm">• 서귀포 지역</span>
+</div>
+<button class="text-primary font-semibold text-sm hover:underline">펼치기</button>
+</div>
+</div>
+</div>
+<div class="w-full lg:w-5/12 xl:w-1/3 sticky top-[100px] h-[calc(100vh-140px)] min-h-[500px] hidden lg:block">
+<div class="relative w-full h-full bg-slate-200 rounded-2xl overflow-hidden shadow-lg border border-slate-300 dark:border-gray-700">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Detailed map of Jeju Island with road networks" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwaFec3-vrcNncgoyeY2i0ZeqklyBChxYrgcxhoVvCW7XpxT6JVOCJxyke451FWXcCYcywvca-wdw8Oia0GRRXWUyoS5pNOYYBHe9LeTxZXNMftecb07vpZ4uRzcB_D_LjcjdTVyG5yrkmaNGWDbdZQ4FrMTcfugpu5qiG0_UcVZ_Uzk9QajFgQh4ZtWYZ4kUCgCZDSAV5rUYreS6-LG01aqwWNApXODMJg9bAu1lXPVxo1_uCqgCHhFvl8h2N288xlvjd0a47wQs"); filter: contrast(0.8) brightness(1.1);'></div>
+<div class="absolute top-4 right-4 flex flex-col gap-2">
+<div class="bg-white dark:bg-[#1a2c32] p-2 rounded-lg shadow-md">
+<button class="flex items-center justify-center size-8 hover:bg-slate-100 dark:hover:bg-gray-700 rounded text-slate-600 dark:text-white">
+<span class="material-symbols-outlined">layers</span>
+</button>
+</div>
+<div class="bg-white dark:bg-[#1a2c32] p-2 rounded-lg shadow-md flex flex-col gap-1">
+<button class="flex items-center justify-center size-8 hover:bg-slate-100 dark:hover:bg-gray-700 rounded text-slate-600 dark:text-white">
+<span class="material-symbols-outlined">add</span>
+</button>
+<div class="h-px bg-slate-200 dark:bg-gray-700 w-full"></div>
+<button class="flex items-center justify-center size-8 hover:bg-slate-100 dark:hover:bg-gray-700 rounded text-slate-600 dark:text-white">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+</div>
+<div class="absolute top-[20%] left-[45%] flex flex-col items-center group cursor-pointer">
+<div class="bg-white text-xs font-bold px-2 py-1 rounded shadow-lg mb-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">제주공항</div>
+<div class="size-8 bg-primary rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[16px]">flight</span>
+</div>
+</div>
+<div class="absolute top-[25%] left-[60%] flex flex-col items-center group cursor-pointer">
+<div class="bg-white text-xs font-bold px-2 py-1 rounded shadow-lg mb-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">함덕 해수욕장</div>
+<div class="size-8 bg-primary rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white">
+<span class="font-bold text-xs">2</span>
+</div>
+</div>
+<div class="absolute top-[28%] left-[62%] flex flex-col items-center group cursor-pointer z-10">
+<div class="bg-white text-xs font-bold px-2 py-1 rounded shadow-lg mb-1 whitespace-nowrap">카페 델문도</div>
+<div class="size-10 bg-[#101d22] rounded-full border-2 border-white shadow-xl flex items-center justify-center text-white relative">
+<span class="font-bold text-sm">3</span>
+<div class="absolute -bottom-1 size-3 bg-[#101d22] rotate-45"></div>
+</div>
+</div>
+<svg class="absolute inset-0 size-full pointer-events-none" style="z-index: 0;">
+<path d="M 280 180 Q 320 200 360 220 T 380 250" fill="none" stroke="#13b6ec" stroke-dasharray="5,5" stroke-width="3"></path>
+</svg>
+<div class="absolute bottom-6 left-6 right-6 bg-white dark:bg-[#1a2c32] rounded-xl p-4 shadow-xl border border-slate-100 dark:border-gray-800 backdrop-blur-sm bg-opacity-95">
+<div class="flex items-center justify-between mb-2">
+<h4 class="text-sm font-bold text-slate-800 dark:text-white">1일차 경로</h4>
+<span class="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">3곳 경유</span>
+</div>
+<div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">directions_car</span>
+                            25 km
+                        </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                            운전 45분
+                        </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

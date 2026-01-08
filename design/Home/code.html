@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Travel Diary Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "primary-dark": "#0e8db8",
+                        "background-light": "#f8fbfc",
+                        "background-dark": "#101d22",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e35",
+                        "text-main-light": "#0d181b",
+                        "text-main-dark": "#e7f0f3",
+                        "text-secondary-light": "#4c869a",
+                        "text-secondary-dark": "#a0b8c4",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans KR", "sans-serif"],
+                        "sans": ["Plus Jakarta Sans", "Noto Sans KR", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings:
+            'FILL' 1,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark transition-colors duration-200">
+<div class="flex h-screen w-full overflow-hidden">
+<aside class="flex w-72 flex-col justify-between border-r border-[#e7f0f3] dark:border-[#2a3c44] bg-surface-light dark:bg-surface-dark p-6 hidden lg:flex">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-12 w-12 border-2 border-primary/20" data-alt="User profile avatar smiling young traveler" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBgSQrZ-JgSmauFUbMncLPVztrwkvB-ZHJbp4kwCOHtG1_Dz8K6qzmBjuaDa-9AzW5XbTOP_IEPr5nzAaZHFQQrkzJWXADmpegjfHKFGlBPZ4jTlPiGGgoyX-MSwqBaIl3otpKLQz_uj1gQSdXEwyQepW29P0knrXta7u7rz0hiJs0bz8Z4NGvjCYH7ZzsX6B-4sSqYV0XMWOKG2enNAapBXf9BnVyou0LyL93qWn8RfzS_Fpt814l9KHvIGSycRa0xlI6e2iKR5HA");'></div>
+<div class="flex flex-col">
+<h1 class="text-base font-bold leading-tight">Alex Traveller</h1>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-medium cursor-pointer hover:text-primary transition-colors">프로필 보기</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" href="#">
+<span class="material-symbols-outlined filled">home</span>
+<span class="text-sm font-semibold">홈</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary-light dark:text-text-secondary-dark hover:bg-[#e7f0f3] dark:hover:bg-[#2a3c44] transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-text-main-light dark:group-hover:text-text-main-dark">calendar_month</span>
+<span class="text-sm font-medium group-hover:text-text-main-light dark:group-hover:text-text-main-dark">여정</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary-light dark:text-text-secondary-dark hover:bg-[#e7f0f3] dark:hover:bg-[#2a3c44] transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-text-main-light dark:group-hover:text-text-main-dark">explore</span>
+<span class="text-sm font-medium group-hover:text-text-main-light dark:group-hover:text-text-main-dark">테마 여행</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary-light dark:text-text-secondary-dark hover:bg-[#e7f0f3] dark:hover:bg-[#2a3c44] transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-text-main-light dark:group-hover:text-text-main-dark">map</span>
+<span class="text-sm font-medium group-hover:text-text-main-light dark:group-hover:text-text-main-dark">저장된 장소 지도</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<div class="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-transparent border border-primary/10 dark:border-primary/20">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">tips_and_updates</span>
+<span class="text-xs font-bold text-primary">여행 팁</span>
+</div>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark leading-relaxed break-keep">
+                    보조 배터리를 꼭 챙기세요. 멋진 석양을 담을 기회를 놓치면 안 되니까요!
+                </p>
+</div>
+<button class="flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary-light dark:text-text-secondary-dark hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm font-medium">로그아웃</span>
+</button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-y-auto bg-background-light dark:bg-background-dark">
+<header class="lg:hidden flex items-center justify-between p-4 bg-surface-light dark:bg-surface-dark border-b border-[#e7f0f3] dark:border-[#2a3c44]">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-8 w-8" data-alt="User profile avatar small" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqrCg1Hbqzb1SX1rOF3lkbMmHbb5b_XTYCcRG22gDjmHqGFbZnhuJU2uIpAoc_EXhoDgM0dV8_4p9WEZdgXXmJ351jlsFwV95OAlsNCcM9Ko6To7EOdf18e-a2HPrdmF-Gb9lcI4jJIpzbrQlWJSARIqmzzq-QZGVN6IVVMcMMZ2s0ZZLQuaTwGIMXiufUL_8edrKQMWRu3EDtSwXrlKTD5WHFl7o1hMzDWcdRIWnSueP5gX_5CMOGYw9BDPZUSwlEyCumoXwrFy4");'></div>
+<span class="font-bold text-lg">여행자</span>
+</div>
+<button class="p-2 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<div class="p-6 md:p-10 max-w-[1400px] mx-auto w-full flex flex-col gap-10">
+<section class="flex flex-wrap justify-between items-end gap-6 animate-fade-in-up">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">반가워요, Alex님! 👋</h1>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-lg">다음 여행지는 어디인가요? 모험이 기다리고 있습니다.</p>
+</div>
+<button class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold shadow-lg shadow-primary/20 flex items-center gap-2 transition-transform active:scale-95">
+<span class="material-symbols-outlined">add</span>
+                    새 여행 만들기
+                </button>
+</section>
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-[#cfe1e7] dark:border-[#2a3c44] shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm">방문한 국가</span>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg text-lg">public</span>
+</div>
+<p class="text-3xl font-bold">12</p>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-[#cfe1e7] dark:border-[#2a3c44] shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm">총 여행 일수</span>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg text-lg">calendar_today</span>
+</div>
+<p class="text-3xl font-bold">145</p>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-[#cfe1e7] dark:border-[#2a3c44] shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm">촬영한 사진</span>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg text-lg">photo_camera</span>
+</div>
+<p class="text-3xl font-bold">2.4k</p>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-[#cfe1e7] dark:border-[#2a3c44] shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="text-text-secondary-light dark:text-text-secondary-dark font-medium text-sm">방문한 도시</span>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg text-lg">location_city</span>
+</div>
+<p class="text-3xl font-bold">48</p>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<div class="xl:col-span-2 flex flex-col gap-6">
+<div class="flex justify-between items-center">
+<h2 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">flight_takeoff</span>
+                            다가오는 여행
+                        </h2>
+<a class="text-sm font-semibold text-primary hover:text-primary-dark hover:underline" href="#">모두 보기</a>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-[#cfe1e7] dark:border-[#2a3c44]">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="w-full md:w-2/5 aspect-video md:aspect-auto h-64 md:h-auto rounded-xl bg-cover bg-center relative overflow-hidden group cursor-pointer" data-alt="Beautiful view of Eiffel Tower in Paris during sunset" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBuj3S4Q6Noc9bAiN8CnSKC964q1nWD6Gx2syKpbdX8f1sMIgS4hOY-hHs6nKGWsl2sTA-eAU2yK605oM3DET-ND2LVDQerN8ky5HTjdwyJaan7H2yNN_NvB40_x0UeN-mQkH7hwHiDmBSrNJ9FFscPpkxQ0-busue36S_AziiPhWTN03htniMTo5YTLCSHXSTMWnbOae81bSdlm4FR5QSffc-9hYuF9UWbb4vDGYdI0oUd-gVzJ2jCn2v2MraeC2iHDlIOZt09tCA");'>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+<div class="absolute bottom-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">location_on</span> 프랑스, 파리
+                                </div>
+</div>
+<div class="flex-1 flex flex-col justify-between py-2 md:pr-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs px-2 py-1 rounded font-bold">예약 확정</span>
+<span class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-medium">• 5일 남음</span>
+</div>
+<h3 class="text-2xl font-bold text-text-main-light dark:text-text-main-dark">파리 휴가</h3>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-sm leading-relaxed line-clamp-2 break-keep">
+                                        루브르 박물관 탐방, 몽마르뜨에서의 커피 한 잔, 해질녘 센 강 유람선. 예술과 문화의 완벽한 조화.
+                                    </p>
+<div class="flex flex-wrap gap-4 mt-4">
+<div class="flex items-center gap-2 p-2 rounded bg-background-light dark:bg-[#1a262b]">
+<span class="material-symbols-outlined text-primary">calendar_month</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-text-secondary-light uppercase font-bold">날짜</span>
+<span class="text-sm font-semibold">10월 15일 - 20일</span>
+</div>
+</div>
+<div class="flex items-center gap-2 p-2 rounded bg-background-light dark:bg-[#1a262b]">
+<span class="material-symbols-outlined text-primary">cloud</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-text-secondary-light uppercase font-bold">날씨</span>
+<span class="text-sm font-semibold">18°C 맑음</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-3 mt-6">
+<button class="flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors shadow-sm shadow-primary/30">
+                                        일정 상세 보기
+                                    </button>
+<button class="px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-text-main-light dark:text-text-main-dark transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4 mt-4">
+<h3 class="text-lg font-bold text-text-main-light dark:text-text-main-dark px-1">최근 추억</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="group flex items-center gap-4 bg-surface-light dark:bg-surface-dark p-3 rounded-xl border border-[#cfe1e7] dark:border-[#2a3c44] hover:shadow-md transition-all cursor-pointer">
+<div class="h-20 w-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Traditional Japanese streets in Kyoto" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC2xZqDqNafIAbShJQPB-lh729-Cp_x7Z3DvME45WHls74FSRy2j_VaQVioDhsv6Jtpgro2k-7Cm482XzSnSPqqutLex8twGn7vOu_7VkdEd0AaIcEKJp_zoBVkCQNqlE5C3x5Gnxhy18SH6sI59Aa_-UcigMc8q7Zs933vUTQPeILaofFtLgb_-QsVVff6WfDBPRWkx4VKf5-RrZR_Dk4duJu8mj7t5cZqav-lgUiWRUhykpz906r0Dk84-pCK_ALZ6Uzn-6Ag46I");'></div>
+<div class="flex flex-col">
+<h4 class="font-bold text-text-main-light dark:text-text-main-dark group-hover:text-primary transition-colors">교토의 가을</h4>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">2022년 11월 • 7일</p>
+<div class="flex -space-x-2">
+<div class="h-6 w-6 rounded-full border-2 border-white dark:border-surface-dark bg-gray-200 bg-cover" data-alt="Friend avatar 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDNXlqDZnKBC6n64jT8b4nmNERxjKgPOx1RhspBrhQanHYHz9NT6lZmi_zmiuXCHD4Q2a8BlZMWryXH7rJdE5cS1NqgUoy6TZFTQpLNw62tu36My3L6nI6O_3ZV8wUqP3Wiarpc3nlzE10EY-R2HpKjNg8BbKzrKtkeaMCQaRMo4NeiBa4kBMi8G-i2v8OdGT1RStzwu7FIqMlGzdRqrGaIsZ0EA85HdkP_n7nL21iQMaW7Z5QftY0GHzprV_sdpgGiqFuyeteJlr8");'></div>
+<div class="h-6 w-6 rounded-full border-2 border-white dark:border-surface-dark bg-gray-200 bg-cover" data-alt="Friend avatar 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBaKHLeeFxeweqXkt5-MMdRll3gxlhi5vSu5tb87dkZ92c0pqQ7FE2pisfdfmG1J2lpBGMAnuZr6nczU99VLB05GuHaGPOoCbXhXfcJxzlsYCZZ3NUS54xty3-MNSBSYB7ZWmm0pEhjSQ9SNVJopcTL_uTOdlGZJaUia0gNV_KO53HSpE4BjMDVs6oum_ESYotSdIbk-8-atjwFh9gdpGsGZ01mO7emqAm5FVkDdefClake-K6jjS5ZDuHlXfjKZT7EXnDWFM6zQeI");'></div>
+</div>
+</div>
+</div>
+<div class="group flex items-center gap-4 bg-surface-light dark:bg-surface-dark p-3 rounded-xl border border-[#cfe1e7] dark:border-[#2a3c44] hover:shadow-md transition-all cursor-pointer">
+<div class="h-20 w-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Sunny beach in Bali with palm trees" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDMNKsMi1CeUagoHdQrANkSKSAssF1PKBK1e3ID_VM2Bxl06aMVt_pbOl5TN8i1OOzmqmUM8jcp7z5h6NvTMqFhPORaiyzZAawupDiR7l-VHdaMjf_CgnSFARwROQRbLji4XYj28CaaUe9GsLE1dhyybEMbJgeTWAxGfu0loR4Ol5js0GpLxfi_P2XExPY9NlDvVr4bqfAxH55bkwhjd-i3DXoQz0s0wUj3xqVGlyVb37LW4YH7rf4k97q4OXQ10pwjq3pTg_Q2zVU");'></div>
+<div class="flex flex-col">
+<h4 class="font-bold text-text-main-light dark:text-text-main-dark group-hover:text-primary transition-colors">발리 휴양</h4>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">2022년 8월 • 10일</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-sm filled">star</span>
+<span class="text-xs font-bold">5.0</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex justify-between items-center">
+<h2 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">explore</span>
+                            테마 여행
+                        </h2>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-[#cfe1e7] dark:border-[#2a3c44] flex flex-col gap-5 h-full">
+<h3 class="text-sm font-bold text-text-secondary-light uppercase tracking-wider">지금 뜨는 여행</h3>
+<div class="relative group cursor-pointer overflow-hidden rounded-xl">
+<div class="aspect-[4/3] w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Northern lights over snowy mountains in Iceland" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDFxdtz_yCrOZ3WtOAKkfdd2m60Mbi5mM8NWQbH0rHJi7-xVVi9BSGvdDN1vOepaLxXrX62tvmROdp9TZWrAe53_NVBQ0PIIUhiVymG-jIq1co4pln_XtjBT_G8axY8ntDdwESQbEh3MO250bFoxYQCLGGVgjbU9LIXgvuz8iggL-iInSi1SDJz_u05Bkd9SsvTGmFk3jxtkl6vG361m23Ca9tOInJ_zjAKHDc1BYhIrnNaOzmTcFGGgCRBhI1Gk8ti9b1OPlXmuIc");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+</div>
+<div class="absolute bottom-0 left-0 p-4 w-full">
+<span class="bg-primary/90 text-white text-[10px] font-bold px-2 py-0.5 rounded mb-2 inline-block">자연</span>
+<h4 class="text-white font-bold text-lg leading-tight mb-1">오로라 헌팅</h4>
+<div class="flex justify-between items-center">
+<p class="text-gray-300 text-xs">아이슬란드 • 7일</p>
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+</div>
+<div class="relative group cursor-pointer overflow-hidden rounded-xl">
+<div class="aspect-[4/3] w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Busy street food market in Bangkok Thailand at night" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWXUsboLyi6hN070ieR5cr5Bw8rwrBtBWr3Un0bLhHSDlBk1hOWF8-9u_Gt2PRE2Cxg5ymo01lAOnLTSQGpX3XvN5yKkZ8N9N1VmkdW3vuDzDfkcj9gaezMXizioXiJdYCT7o32uX6FLlM-8JzzA7MvNBZ9LbtYfFPyeSWbVfRabks0ksj3yYrVW2ieekEHbFkEy_gyEGQ3S6kitoFt7slc1K25RLwRE3deWoqfAmfs-9Rnyqc10yo5qm4ZdGdpAJO3ZuQUK4S4XY");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+</div>
+<div class="absolute bottom-0 left-0 p-4 w-full">
+<span class="bg-orange-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded mb-2 inline-block">미식 여행</span>
+<h4 class="text-white font-bold text-lg leading-tight mb-1">방콕 스트릿 푸드</h4>
+<div class="flex justify-between items-center">
+<p class="text-gray-300 text-xs">태국 • 4일</p>
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+</div>
+</div>
+<button class="mt-auto w-full py-3 rounded-lg border border-primary/20 text-primary font-semibold hover:bg-primary/5 transition-colors text-sm">
+                            더 많은 테마 보기
+                        </button>
+</div>
+</div>
+</div>
+<section class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<h2 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">map</span>
+                        저장된 장소
+                    </h2>
+</div>
+<div class="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-2xl overflow-hidden relative group">
+<div class="w-full h-full bg-cover bg-center grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="World map illustration showing saved locations" data-location="World Map" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDKW5tgOZHYCyAc6NGAYZdQ9bf2v8Y4yqSNMe7dGtZaJZLeWsHmN8lYptZriLKiaIwcbPP36f4EXfRr9-Db-RtdkCsbHcsXoXkHoytjeAaCggmdbR8lym0iB37YRwdmt9U36sWSz7OO2y4qAFU4riEgDgjOmK0aUi8tqBAjNPemjKVe8yXRUhDrbpW3NdXoqWT7l2yxpTkDUNfeFG07b6WpItbFLLQO7AXDYEOjNSeymRdBNPdTRB7WyC5ewyjjAeH6xATLctdnCxI");'></div>
+<div class="absolute top-1/3 left-1/4 animate-bounce duration-1000">
+<span class="material-symbols-outlined text-primary text-4xl filled drop-shadow-md">location_on</span>
+</div>
+<div class="absolute bottom-1/3 right-1/3 animate-bounce duration-[1500ms]">
+<span class="material-symbols-outlined text-primary text-4xl filled drop-shadow-md">location_on</span>
+</div>
+<div class="absolute top-1/2 right-1/4 animate-bounce duration-[1200ms]">
+<span class="material-symbols-outlined text-gray-400 text-4xl filled drop-shadow-md">location_on</span>
+</div>
+<div class="absolute bottom-4 right-4">
+<button class="bg-white dark:bg-surface-dark text-text-main-light dark:text-text-main-dark px-4 py-2 rounded-lg shadow-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">open_in_full</span>
+                            전체 지도 열기
+                        </button>
+</div>
+</div>
+</section>
+<div class="h-10"></div>
+</div>
+</main>
+</div>
+
+</body></html>

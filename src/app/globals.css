@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  /* Light Mode - Travel Diary Theme */
+  --background: #f8fbfc;
+  --foreground: #0d181b;
+  --card: #FFFFFF;
+  --card-foreground: #0d181b;
+  --primary: #13b6ec;
+  --primary-dark: #0e8db8;
+  --primary-foreground: #FFFFFF;
+  --secondary: #e7f0f3;
+  --secondary-foreground: #0d181b;
+  --muted: #e7f0f3;
+  --muted-foreground: #4c869a;
+  --accent: #e7f0f3;
+  --accent-foreground: #0d181b;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #cfe1e7;
+  --input: #cfe1e7;
+  --ring: #13b6ec;
+  --surface: #ffffff;
+  
+  /* Legacy Diary Theme Colors (for backward compat) */
+  --diary-cream: #FDFCF0;
+  --diary-ink: #2C2724;
+  --diary-golden: #E09F3E;
+  --diary-stone: #78716C;
+  --diary-border: #E5E2D0;
+}
+
+.dark {
+  --background: #101d22;
+  --foreground: #e7f0f3;
+  --card: #1c2e35;
+  --card-foreground: #e7f0f3;
+  --primary: #13b6ec;
+  --primary-dark: #0e8db8;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2a3c44;
+  --secondary-foreground: #e7f0f3;
+  --muted: #2a3c44;
+  --muted-foreground: #a0b8c4;
+  --accent: #2a3c44;
+  --accent-foreground: #e7f0f3;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #2a3c44;
+  --input: #2a3c44;
+  --ring: #13b6ec;
+  --surface: #1c2e35;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Plus Jakarta Sans', 'Noto Sans KR', Arial, Helvetica, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Material Symbols support */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+.material-symbols-outlined.filled {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Animation utilities */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out;
+}

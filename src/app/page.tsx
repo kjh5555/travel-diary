@@ -5,8 +5,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { NewJourneyModal } from "@/presentation/components/NewJourney/NewJourneyModal";
 import { SavedItinerary, SavedItineraryPlace } from "@/domain/types/itinerary";
-import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
-import { GetTripItinerariesUseCase } from "@/domain/usecases/itinerary/GetTripItinerariesUseCase";
 import Link from 'next/link';
 import { groupItinerariesByStatus } from "@/domain/utils/dateUtils";
 import { MapContainer } from "@/presentation/components/Map/MapContainer";
@@ -31,36 +29,50 @@ export default function Home() {
   const [stats, setStats] = useState<TravelStats>({ countries: 0, totalDays: 0, photos: 0, cities: 0 });
 
   const loadItineraries = async () => {
-    const repository = new LocalStorageItineraryRepository();
-    const useCase = new GetTripItinerariesUseCase(repository);
-    const result = await useCase.execute();
-    setSavedItineraries(result.reverse());
+    if (!session?.user?.id) {
+      setSavedItineraries([]);
+      setStats({ countries: 0, totalDays: 0, photos: 0, cities: 0 });
+      return;
+    }
 
-    const totalDays = result.reduce((acc, itinerary) => {
-      const start = new Date(itinerary.startDate);
-      const end = new Date(itinerary.endDate);
-      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      return acc + days;
-    }, 0);
+    try {
+      const response = await fetch('/api/itineraries');
+      if (!response.ok) {
+        setSavedItineraries([]);
+        return;
+      }
+      const result: SavedItinerary[] = await response.json();
+      setSavedItineraries(result.reverse());
 
-    const totalPlaces = result.reduce((acc, itinerary) =>
-      acc + itinerary.items.filter(i => !i.isDayTransition).length, 0);
+      const totalDays = result.reduce((acc: number, itinerary: SavedItinerary) => {
+        const start = new Date(itinerary.startDate);
+        const end = new Date(itinerary.endDate);
+        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return acc + days;
+      }, 0);
 
-    const totalPhotos = result.reduce((acc, itinerary) =>
-      acc + itinerary.items.reduce((sum, item) =>
-        sum + (item.memory?.images?.length || 0), 0), 0);
+      const totalPlaces = result.reduce((acc: number, itinerary: SavedItinerary) =>
+        acc + itinerary.items.filter(i => !i.isDayTransition).length, 0);
 
-    setStats({
-      countries: Math.min(result.length, 12),
-      totalDays,
-      photos: totalPhotos,
-      cities: totalPlaces
-    });
+      const totalPhotos = result.reduce((acc: number, itinerary: SavedItinerary) =>
+        acc + itinerary.items.reduce((sum: number, item: SavedItineraryPlace) =>
+          sum + (item.memory?.images?.length || 0), 0), 0);
+
+      setStats({
+        countries: Math.min(result.length, 12),
+        totalDays,
+        photos: totalPhotos,
+        cities: totalPlaces
+      });
+    } catch (error) {
+      console.error("Failed to load itineraries:", error);
+      setSavedItineraries([]);
+    }
   };
 
   useEffect(() => {
     loadItineraries();
-  }, []);
+  }, [session]);
 
   const handleOpenItinerary = (itinerary: SavedItinerary) => {
     setSelectedItinerary(itinerary);
@@ -358,7 +370,7 @@ function ThemeTravelSection() {
 
     const repository = new LocalStorageThemeSpotRepository();
     const toggleLikeUseCase = new ToggleThemeSpotLikeUseCase(repository);
-    const updated = await toggleLikeUseCase.execute(id);
+    const updated = await toggleLikeUseCase.execute(id, "anonymous");
     if (updated) {
       setSpots(prev => prev.map(s => s.id === id ? updated : s));
     }
@@ -438,6 +450,7 @@ function ThemeTravelSection() {
 
 function SavedPlacesMapPreview() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [likedPlaces, setLikedPlaces] = useState<SavedItineraryPlace[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -445,23 +458,36 @@ function SavedPlacesMapPreview() {
 
   useEffect(() => {
     const loadLikedPlaces = async () => {
-      const repository = new LocalStorageItineraryRepository();
-      const useCase = new GetTripItinerariesUseCase(repository);
-      const itineraries = await useCase.execute();
+      if (!session?.user?.id) {
+        setLikedPlaces([]);
+        return;
+      }
 
-      const allLiked: SavedItineraryPlace[] = [];
-      itineraries.forEach(trip => {
-        trip.items.forEach(item => {
-          if (item.memory?.isLiked) {
-            allLiked.push(item);
-          }
+      try {
+        const response = await fetch('/api/itineraries');
+        if (!response.ok) {
+          setLikedPlaces([]);
+          return;
+        }
+        const itineraries: SavedItinerary[] = await response.json();
+
+        const allLiked: SavedItineraryPlace[] = [];
+        itineraries.forEach((trip: SavedItinerary) => {
+          trip.items.forEach((item: SavedItineraryPlace) => {
+            if (item.memory?.isLiked) {
+              allLiked.push(item);
+            }
+          });
         });
-      });
-      setLikedPlaces(allLiked);
+        setLikedPlaces(allLiked);
+      } catch (error) {
+        console.error("Failed to load liked places:", error);
+        setLikedPlaces([]);
+      }
     };
 
     loadLikedPlaces();
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     if (!map) return;

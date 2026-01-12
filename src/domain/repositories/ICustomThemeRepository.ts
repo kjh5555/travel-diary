@@ -7,12 +7,12 @@ import {
 import { Place } from "../types/place";
 
 export interface ICustomThemeRepository {
-    getAll(): Promise<CustomTheme[]>;
-    getById(id: string): Promise<CustomTheme | null>;
-    create(input: CreateCustomThemeInput): Promise<CustomTheme>;
-    update(id: string, input: UpdateCustomThemeInput): Promise<CustomTheme | null>;
-    delete(id: string): Promise<boolean>;
-    addPlace(themeId: string, place: Place, note?: string): Promise<CustomThemePlace | null>;
-    removePlace(themeId: string, placeId: string): Promise<boolean>;
-    updatePlaceNote(themeId: string, placeId: string, note: string): Promise<CustomThemePlace | null>;
+    getAll(userId: string): Promise<CustomTheme[]>;
+    getById(id: string, userId: string): Promise<CustomTheme | null>;
+    create(input: CreateCustomThemeInput, userId: string): Promise<CustomTheme>;
+    update(id: string, input: UpdateCustomThemeInput, userId: string): Promise<CustomTheme | null>;
+    delete(id: string, userId: string): Promise<boolean>;
+    addPlace(themeId: string, place: Place, userId: string, note?: string): Promise<CustomThemePlace | null>;
+    removePlace(themeId: string, placeId: string, userId: string): Promise<boolean>;
+    updatePlaceNote(themeId: string, placeId: string, note: string, userId: string): Promise<CustomThemePlace | null>;
 }

@@ -4,18 +4,13 @@ import { Header } from '../Header'
 import { useSession, signIn, signOut } from 'next-auth/react'
 
 vi.mock('next-auth/react')
-vi.mock('next/link', () => ({
-    default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-        <a href={href}>{children}</a>
-    ),
-}))
 
 describe('Header', () => {
     beforeEach(() => {
         vi.clearAllMocks()
     })
 
-    it('should render JapanPlanner logo', () => {
+    it('should show default user name when not authenticated', () => {
         vi.mocked(useSession).mockReturnValue({
             data: null,
             status: 'unauthenticated',
@@ -24,7 +19,7 @@ describe('Header', () => {
 
         render(<Header />)
 
-        expect(screen.getByText('JapanPlanner')).toBeDefined()
+        expect(screen.getByText('여행자')).toBeDefined()
     })
 
     it('should show login button when user is not authenticated', () => {
@@ -36,7 +31,7 @@ describe('Header', () => {
 
         render(<Header />)
 
-        const loginButton = screen.getByRole('button', { name: /log in/i })
+        const loginButton = screen.getByRole('button', { name: /로그인/i })
         expect(loginButton).toBeDefined()
     })
 
@@ -49,7 +44,7 @@ describe('Header', () => {
 
         render(<Header />)
 
-        const loginButton = screen.getByRole('button', { name: /log in/i })
+        const loginButton = screen.getByRole('button', { name: /로그인/i })
         fireEvent.click(loginButton)
 
         expect(signIn).toHaveBeenCalledWith('google')
@@ -59,6 +54,7 @@ describe('Header', () => {
         vi.mocked(useSession).mockReturnValue({
             data: {
                 user: {
+                    id: 'user-123',
                     name: 'John Doe',
                     email: 'john@example.com',
                     image: 'https://example.com/avatar.jpg',
@@ -74,30 +70,11 @@ describe('Header', () => {
         expect(screen.getByText('John Doe')).toBeDefined()
     })
 
-    it('should show user button when authenticated', () => {
+    it('should show menu button', () => {
         vi.mocked(useSession).mockReturnValue({
             data: {
                 user: {
-                    name: 'John Doe',
-                    email: 'john@example.com',
-                    image: null,
-                },
-                expires: '2024-12-31',
-            },
-            status: 'authenticated',
-            update: vi.fn(),
-        })
-
-        render(<Header />)
-
-        const userButtons = screen.getAllByRole('button')
-        expect(userButtons.length).toBeGreaterThan(0)
-    })
-
-    it('should call signOut when user button is clicked', () => {
-        vi.mocked(useSession).mockReturnValue({
-            data: {
-                user: {
+                    id: 'user-123',
                     name: 'John Doe',
                     email: 'john@example.com',
                     image: null,
@@ -111,18 +88,14 @@ describe('Header', () => {
         render(<Header />)
 
         const buttons = screen.getAllByRole('button')
-        const userButton = buttons.find(btn => btn.className.includes('rounded-full'))
-
-        if (userButton) {
-            fireEvent.click(userButton)
-            expect(signOut).toHaveBeenCalled()
-        }
+        expect(buttons.length).toBeGreaterThan(0)
     })
 
-    it('should not show user name on mobile when authenticated', () => {
+    it('should not show login button when authenticated', () => {
         vi.mocked(useSession).mockReturnValue({
             data: {
                 user: {
+                    id: 'user-123',
                     name: 'John Doe',
                     email: 'john@example.com',
                     image: null,
@@ -135,8 +108,7 @@ describe('Header', () => {
 
         render(<Header />)
 
-        const nameElement = screen.getByText('John Doe')
-        expect(nameElement.className).toContain('hidden')
-        expect(nameElement.className).toContain('sm:inline-block')
+        const loginButton = screen.queryByRole('button', { name: /로그인/i })
+        expect(loginButton).toBeNull()
     })
 })

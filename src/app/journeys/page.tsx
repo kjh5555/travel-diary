@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { SavedItinerary } from "@/domain/types/itinerary";
-import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
-import { GetTripItinerariesUseCase } from "@/domain/usecases/itinerary/GetTripItinerariesUseCase";
 import { groupItinerariesByStatus, getItineraryStatus } from "@/domain/utils/dateUtils";
 import { NewJourneyModal } from "@/presentation/components/NewJourney/NewJourneyModal";
 import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePhoto";
@@ -21,6 +20,7 @@ const TABS: { label: string; value: TabType }[] = [
 
 export default function JourneysPage() {
     const router = useRouter();
+    const { data: session } = useSession();
     const [itineraries, setItineraries] = useState<SavedItinerary[]>([]);
     const [selectedTab, setSelectedTab] = useState<TabType>('all');
     const [searchQuery, setSearchQuery] = useState("");
@@ -29,14 +29,24 @@ export default function JourneysPage() {
     const [selectedItinerary, setSelectedItinerary] = useState<SavedItinerary | null>(null);
 
     const loadItineraries = async () => {
+        if (!session?.user?.id) {
+            setItineraries([]);
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         try {
-            const repository = new LocalStorageItineraryRepository();
-            const useCase = new GetTripItinerariesUseCase(repository);
-            const result = await useCase.execute();
+            const response = await fetch('/api/itineraries');
+            if (!response.ok) {
+                setItineraries([]);
+                return;
+            }
+            const result: SavedItinerary[] = await response.json();
             setItineraries(result.reverse());
         } catch (error) {
             console.error("Failed to load itineraries:", error);
+            setItineraries([]);
         } finally {
             setIsLoading(false);
         }
@@ -44,7 +54,7 @@ export default function JourneysPage() {
 
     useEffect(() => {
         loadItineraries();
-    }, []);
+    }, [session]);
 
     const { ongoing, upcoming, past } = groupItinerariesByStatus(itineraries);
 

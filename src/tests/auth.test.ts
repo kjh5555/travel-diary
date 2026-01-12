@@ -6,6 +6,6 @@ describe('Auth Configuration', () => {
         const providers = authOptions.providers
         const googleProvider = providers.find((p: any) => p.id === 'google')
         expect(googleProvider).toBeDefined()
-        expect(googleProvider.name).toBe('Google')
+        expect(googleProvider?.name).toBe('Google')
     })
 })

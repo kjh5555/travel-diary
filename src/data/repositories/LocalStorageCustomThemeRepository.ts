@@ -20,7 +20,7 @@ export class LocalStorageCustomThemeRepository implements ICustomThemeRepository
         return `place_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     }
 
-    async getAll(): Promise<CustomTheme[]> {
+    async getAll(_userId: string): Promise<CustomTheme[]> {
         if (typeof window === "undefined") return [];
         const data = localStorage.getItem(STORAGE_KEY);
         if (!data) return [];
@@ -31,13 +31,13 @@ export class LocalStorageCustomThemeRepository implements ICustomThemeRepository
         }
     }
 
-    async getById(id: string): Promise<CustomTheme | null> {
-        const themes = await this.getAll();
+    async getById(id: string, _userId: string): Promise<CustomTheme | null> {
+        const themes = await this.getAll(_userId);
         return themes.find(t => t.id === id) || null;
     }
 
-    async create(input: CreateCustomThemeInput): Promise<CustomTheme> {
-        const themes = await this.getAll();
+    async create(input: CreateCustomThemeInput, _userId: string): Promise<CustomTheme> {
+        const themes = await this.getAll(_userId);
         const now = new Date().toISOString();
         
         const newTheme: CustomTheme = {
@@ -57,8 +57,8 @@ export class LocalStorageCustomThemeRepository implements ICustomThemeRepository
         return newTheme;
     }
 
-    async update(id: string, input: UpdateCustomThemeInput): Promise<CustomTheme | null> {
-        const themes = await this.getAll();
+    async update(id: string, input: UpdateCustomThemeInput, _userId: string): Promise<CustomTheme | null> {
+        const themes = await this.getAll(_userId);
         const index = themes.findIndex(t => t.id === id);
         if (index === -1) return null;
 
@@ -73,8 +73,8 @@ export class LocalStorageCustomThemeRepository implements ICustomThemeRepository
         return updated;
     }
 
-    async delete(id: string): Promise<boolean> {
-        const themes = await this.getAll();
+    async delete(id: string, _userId: string): Promise<boolean> {
+        const themes = await this.getAll(_userId);
         const filtered = themes.filter(t => t.id !== id);
         if (filtered.length === themes.length) return false;
         
@@ -82,8 +82,8 @@ export class LocalStorageCustomThemeRepository implements ICustomThemeRepository
         return true;
     }
 
-    async addPlace(themeId: string, place: Place, note?: string): Promise<CustomThemePlace | null> {
-        const themes = await this.getAll();
+    async addPlace(themeId: string, place: Place, _userId: string, note?: string): Promise<CustomThemePlace | null> {
+        const themes = await this.getAll(_userId);
         const theme = themes.find(t => t.id === themeId);
         if (!theme) return null;
 
@@ -108,8 +108,8 @@ export class LocalStorageCustomThemeRepository implements ICustomThemeRepository
         return newPlace;
     }
 
-    async removePlace(themeId: string, placeId: string): Promise<boolean> {
-        const themes = await this.getAll();
+    async removePlace(themeId: string, placeId: string, _userId: string): Promise<boolean> {
+        const themes = await this.getAll(_userId);
         const theme = themes.find(t => t.id === themeId);
         if (!theme) return false;
 
@@ -123,8 +123,8 @@ export class LocalStorageCustomThemeRepository implements ICustomThemeRepository
         return true;
     }
 
-    async updatePlaceNote(themeId: string, placeId: string, note: string): Promise<CustomThemePlace | null> {
-        const themes = await this.getAll();
+    async updatePlaceNote(themeId: string, placeId: string, note: string, _userId: string): Promise<CustomThemePlace | null> {
+        const themes = await this.getAll(_userId);
         const theme = themes.find(t => t.id === themeId);
         if (!theme) return null;
 

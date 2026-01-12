@@ -130,11 +130,11 @@ export class LocalStorageAnimeSpotRepository implements IAnimeSpotRepository {
         }));
     }
 
-    async getAll(): Promise<AnimeSpot[]> {
+    async getAll(_userId?: string): Promise<AnimeSpot[]> {
         return this.enrichWithLikes(SEED_DATA);
     }
 
-    async getById(id: string): Promise<AnimeSpot | null> {
+    async getById(id: string, _userId?: string): Promise<AnimeSpot | null> {
         const spot = SEED_DATA.find(s => s.id === id);
         if (!spot) return null;
         
@@ -145,12 +145,12 @@ export class LocalStorageAnimeSpotRepository implements IAnimeSpotRepository {
         };
     }
 
-    async getByCategory(category: AnimeCategory): Promise<AnimeSpot[]> {
+    async getByCategory(category: AnimeCategory, _userId?: string): Promise<AnimeSpot[]> {
         const filtered = SEED_DATA.filter(s => s.category === category);
         return this.enrichWithLikes(filtered);
     }
 
-    async search(query: string): Promise<AnimeSpot[]> {
+    async search(query: string, _userId?: string): Promise<AnimeSpot[]> {
         const lowercaseQuery = query.toLowerCase();
         const filtered = SEED_DATA.filter(s => 
             s.title.toLowerCase().includes(lowercaseQuery) ||
@@ -161,7 +161,7 @@ export class LocalStorageAnimeSpotRepository implements IAnimeSpotRepository {
         return this.enrichWithLikes(filtered);
     }
 
-    async toggleLike(id: string): Promise<AnimeSpot | null> {
+    async toggleLike(id: string, _userId: string): Promise<AnimeSpot | null> {
         const spot = SEED_DATA.find(s => s.id === id);
         if (!spot) return null;
 
@@ -178,5 +178,11 @@ export class LocalStorageAnimeSpotRepository implements IAnimeSpotRepository {
             ...spot,
             isLiked: !isCurrentlyLiked
         };
+    }
+
+    async getLikedByUser(_userId: string): Promise<AnimeSpot[]> {
+        const likedIds = this.getLikedIds();
+        const likedSpots = SEED_DATA.filter(s => likedIds.includes(s.id));
+        return likedSpots.map(spot => ({ ...spot, isLiked: true }));
     }
 }

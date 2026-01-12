@@ -55,16 +55,17 @@ describe('CheckOpenNowUseCase', () => {
         expect(result).toBeUndefined();
     });
 
-    it('should handle place with opening_hours but no open_now', () => {
+    it('should handle place with opening_hours but closed', () => {
         const placeWithPartialData: Place = {
             ...placeWithoutHours,
             opening_hours: {
+                open_now: false,
                 weekday_text: ['Monday: 9:00 AM – 10:00 PM'],
             },
         };
 
         const result = useCase.execute(placeWithPartialData);
 
-        expect(result).toBeUndefined();
+        expect(result).toBe(false);
     });
 });

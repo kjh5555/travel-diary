@@ -64,7 +64,7 @@ describe('GooglePlaceRepository', () => {
                 callback(mockResults, 'OK');
             });
 
-            const results = await repository.searchPlaces('Osaka Castle');
+            const results = await repository.searchPlaces({ query: 'Osaka Castle' });
 
             expect(mockPlacesServiceInstance.textSearch).toHaveBeenCalledWith(
                 { query: 'Osaka Castle' },
@@ -81,7 +81,7 @@ describe('GooglePlaceRepository', () => {
                 callback(null, 'ZERO_RESULTS');
             });
 
-            const results = await repository.searchPlaces('NonexistentPlace');
+            const results = await repository.searchPlaces({ query: 'NonexistentPlace' });
 
             expect(results).toEqual([]);
         });
@@ -91,7 +91,7 @@ describe('GooglePlaceRepository', () => {
                 callback(null, 'INVALID_REQUEST');
             });
 
-            await expect(repository.searchPlaces('Invalid')).rejects.toThrow('Place search failed with status: INVALID_REQUEST');
+            await expect(repository.searchPlaces({ query: 'Invalid' })).rejects.toThrow('Place search failed with status: INVALID_REQUEST');
         });
     });
 

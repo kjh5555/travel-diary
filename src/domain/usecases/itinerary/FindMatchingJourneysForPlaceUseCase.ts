@@ -13,8 +13,11 @@ export interface MatchingJourneysResult {
 export class FindMatchingJourneysForPlaceUseCase {
     constructor(private repository: IItineraryRepository) {}
 
-    async execute(place: Place): Promise<MatchingJourneysResult> {
-        const allItineraries = await this.repository.getAllTripItineraries();
+    async execute(place: Place, userId: string): Promise<MatchingJourneysResult> {
+        if (!userId || userId.trim().length === 0) {
+            throw new Error("User ID is required");
+        }
+        const allItineraries = await this.repository.getAllTripItineraries(userId);
         
         const ongoingJourneys = allItineraries.filter(itinerary => 
             getItineraryStatus(itinerary.startDate, itinerary.endDate) === 'ongoing'

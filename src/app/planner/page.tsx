@@ -1,32 +1,42 @@
 "use client"
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { SavedItinerary, PlaceMemory } from "@/domain/types/itinerary";
-import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
-import { GetTripItinerariesUseCase } from "@/domain/usecases/itinerary/GetTripItinerariesUseCase";
-import { UpdateTripMemoryUseCase } from "@/domain/usecases/itinerary/UpdateTripMemoryUseCase";
 import { PlannerCard } from "@/presentation/components/Planner/PlannerCard";
 import { PlannerDetail } from "@/presentation/components/Planner/PlannerDetail";
 import { groupItinerariesByStatus } from "@/domain/utils/dateUtils";
 
 export default function PlannerPage() {
+    const { data: session } = useSession();
     const [savedItineraries, setSavedItineraries] = useState<SavedItinerary[]>([]);
     const [selectedItinerary, setSelectedItinerary] = useState<SavedItinerary | null>(null);
 
-    // Load Data
     const loadItineraries = async () => {
-        const repository = new LocalStorageItineraryRepository();
-        const useCase = new GetTripItinerariesUseCase(repository);
-        const result = await useCase.execute();
-        setSavedItineraries(result.reverse());
+        if (!session?.user?.id) {
+            setSavedItineraries([]);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/itineraries');
+            if (!response.ok) {
+                setSavedItineraries([]);
+                return;
+            }
+            const result: SavedItinerary[] = await response.json();
+            setSavedItineraries(result.reverse());
+        } catch (error) {
+            console.error("Failed to load itineraries:", error);
+            setSavedItineraries([]);
+        }
     };
 
     useEffect(() => {
         loadItineraries();
-    }, []);
+    }, [session]);
 
-    // Handle Updates
     const handleUpdateMemory = async (placeIndex: number, memory: PlaceMemory) => {
-        if (!selectedItinerary) return;
+        if (!selectedItinerary || !session?.user?.id) return;
 
         const updatedItems = [...selectedItinerary.items];
         updatedItems[placeIndex] = {
@@ -39,14 +49,20 @@ export default function PlannerPage() {
             items: updatedItems
         };
 
-        const repository = new LocalStorageItineraryRepository();
-        const updateUseCase = new UpdateTripMemoryUseCase(repository);
+        try {
+            const response = await fetch(`/api/itineraries/${selectedItinerary.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedItinerary),
+            });
 
-        await updateUseCase.execute(selectedItinerary.id, updatedItinerary);
-
-        setSelectedItinerary(updatedItinerary);
-        // Optimize: Update list without full reload if needed, but for now reload to sync
-        loadItineraries();
+            if (response.ok) {
+                setSelectedItinerary(updatedItinerary);
+                loadItineraries();
+            }
+        } catch (error) {
+            console.error("Failed to update memory:", error);
+        }
     };
 
     return (

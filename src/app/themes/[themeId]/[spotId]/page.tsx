@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { 
     ThemeSpot, 
@@ -17,6 +18,8 @@ import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePho
 export default function ThemeSpotDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const { data: session } = useSession();
+    const userId = session?.user?.id || "anonymous";
     const themeId = params.themeId as ThemeCategoryId;
     const spotId = params.spotId as string;
     
@@ -49,7 +52,7 @@ export default function ThemeSpotDetailPage() {
 
     const handleToggleLike = async () => {
         if (!spot) return;
-        const updated = await toggleLikeUseCase.execute(spot.id);
+        const updated = await toggleLikeUseCase.execute(spot.id, userId);
         if (updated) {
             setSpot(updated);
         }

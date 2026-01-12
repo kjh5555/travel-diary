@@ -1,11 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { CustomTheme, CUSTOM_THEME_COLORS } from "@/domain/types/customTheme";
 import { CustomThemePlaceCard } from "./CustomThemePlaceCard";
-import { LocalStorageCustomThemeRepository } from "@/data/repositories/LocalStorageCustomThemeRepository";
-import { RemovePlaceFromThemeUseCase } from "@/domain/usecases/customTheme/RemovePlaceFromThemeUseCase";
-import { GetCustomThemeByIdUseCase } from "@/domain/usecases/customTheme/GetCustomThemeByIdUseCase";
 
 interface CustomThemeDetailModalProps {
     theme: CustomTheme;
@@ -22,6 +20,7 @@ export const CustomThemeDetailModal: React.FC<CustomThemeDetailModalProps> = ({
     onUpdate,
     onAddPlaces,
 }) => {
+    const { data: session } = useSession();
     const [theme, setTheme] = useState<CustomTheme>(initialTheme);
     const [isRemoving, setIsRemoving] = useState<string | null>(null);
 
@@ -32,18 +31,24 @@ export const CustomThemeDetailModal: React.FC<CustomThemeDetailModalProps> = ({
     const colorConfig = CUSTOM_THEME_COLORS.find(c => c.value === theme.color) || CUSTOM_THEME_COLORS[4];
 
     const handleRemovePlace = async (placeId: string) => {
+        if (!session?.user?.id) return;
+        
         setIsRemoving(placeId);
         try {
-            const repository = new LocalStorageCustomThemeRepository();
-            const removeUseCase = new RemovePlaceFromThemeUseCase(repository);
-            await removeUseCase.execute(theme.id, placeId);
+            const response = await fetch(`/api/custom-themes/${theme.id}/places?placeId=${placeId}`, {
+                method: 'DELETE',
+            });
 
-            const getUseCase = new GetCustomThemeByIdUseCase(repository);
-            const updated = await getUseCase.execute(theme.id);
-            if (updated) {
-                setTheme(updated);
-                onUpdate?.();
+            if (response.ok) {
+                const refreshResponse = await fetch(`/api/custom-themes/${theme.id}`);
+                if (refreshResponse.ok) {
+                    const updated: CustomTheme = await refreshResponse.json();
+                    setTheme(updated);
+                    onUpdate?.();
+                }
             }
+        } catch (error) {
+            console.error("Failed to remove place:", error);
         } finally {
             setIsRemoving(null);
         }

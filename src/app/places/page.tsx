@@ -1,10 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { SavedItineraryPlace } from "@/domain/types/itinerary";
+import { useSession } from "next-auth/react";
+import { SavedItinerary, SavedItineraryPlace } from "@/domain/types/itinerary";
 import { Place } from "@/domain/types/place";
-import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
-import { GetTripItinerariesUseCase } from "@/domain/usecases/itinerary/GetTripItinerariesUseCase";
 import { MapContainer } from "@/presentation/components/Map/MapContainer";
 import { PlaceImage } from "@/presentation/components/Place/PlaceImage";
 import { PlaceDetailModal } from "@/presentation/components/Place/PlaceDetailModal";
@@ -21,6 +20,7 @@ const FILTERS: { label: string; value: FilterType }[] = [
 ];
 
 export default function PlacesPage() {
+    const { data: session } = useSession();
     const [likedPlaces, setLikedPlaces] = useState<SavedItineraryPlace[]>([]);
     const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
     const [isLoading, setIsLoading] = useState(true);
@@ -43,15 +43,24 @@ export default function PlacesPage() {
 
     useEffect(() => {
         const loadPlaces = async () => {
+            if (!session?.user?.id) {
+                setLikedPlaces([]);
+                setIsLoading(false);
+                return;
+            }
+
             setIsLoading(true);
             try {
-                const repository = new LocalStorageItineraryRepository();
-                const useCase = new GetTripItinerariesUseCase(repository);
-                const itineraries = await useCase.execute();
+                const response = await fetch('/api/itineraries');
+                if (!response.ok) {
+                    setLikedPlaces([]);
+                    return;
+                }
+                const itineraries: SavedItinerary[] = await response.json();
 
                 const allLiked: SavedItineraryPlace[] = [];
-                itineraries.forEach(trip => {
-                    trip.items.forEach(item => {
+                itineraries.forEach((trip: SavedItinerary) => {
+                    trip.items.forEach((item: SavedItineraryPlace) => {
                         if (item.memory?.isLiked) {
                             allLiked.push(item);
                         }
@@ -60,13 +69,14 @@ export default function PlacesPage() {
                 setLikedPlaces(allLiked.reverse());
             } catch (error) {
                 console.error("Failed to load places:", error);
+                setLikedPlaces([]);
             } finally {
                 setIsLoading(false);
             }
         };
 
         loadPlaces();
-    }, []);
+    }, [session]);
 
     const getPlaceCategory = (types: string[] = []): FilterType => {
         if (types.some(t => ['restaurant', 'food', 'cafe', 'bar', 'bakery'].includes(t))) {
@@ -137,13 +147,14 @@ export default function PlacesPage() {
     };
 
     const handleConfirmAddToJourney = async (journeyId: string, day: number) => {
-        if (!placeToAdd) return;
+        if (!placeToAdd || !session?.user?.id) return;
         
         try {
             const updatedJourney = await addPlaceToJourney({
                 place: placeToAdd,
                 journeyId,
-                day
+                day,
+                userId: session.user.id
             });
             
             handleJourneySelectionClose();

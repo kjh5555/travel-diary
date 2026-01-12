@@ -1,8 +1,10 @@
 "use client"
 
 import { SessionProvider } from "next-auth/react"
+import React from "react"
+
+const Provider = SessionProvider as React.FC<{ children: React.ReactNode }>
 
 export const NextAuthProvider = ({ children }: { children: React.ReactNode }) => {
-    // @ts-expect-error SessionProvider type mismatch with React 19
-    return <SessionProvider>{children}</SessionProvider>
+    return <Provider>{children}</Provider>
 }

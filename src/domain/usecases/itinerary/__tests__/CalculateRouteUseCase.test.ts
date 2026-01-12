@@ -33,6 +33,7 @@ describe('CalculateRouteUseCase', () => {
             durationSeconds: 900, // 15 minutes
             distanceMeters: 3500,
             mode: 'WALKING',
+            steps: [],
         };
 
         vi.mocked(mockRepository.getRoute).mockResolvedValue(mockRoute);
@@ -65,6 +66,7 @@ describe('CalculateRouteUseCase', () => {
             durationSeconds: 600,
             distanceMeters: 5000,
             mode: 'DRIVING',
+            steps: [],
         };
 
         vi.mocked(mockRepository.getRoute).mockResolvedValue(drivingRoute);
@@ -80,6 +82,7 @@ describe('CalculateRouteUseCase', () => {
             durationSeconds: 900,
             distanceMeters: 3500,
             mode: 'WALKING',
+            steps: [],
         };
 
         vi.mocked(mockRepository.getRoute).mockResolvedValue(walkingRoute);

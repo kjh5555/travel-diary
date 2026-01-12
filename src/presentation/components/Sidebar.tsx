@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
+import { useSession, signIn, signOut } from "next-auth/react"
 
 interface NavItem {
     label: string;
@@ -86,13 +86,21 @@ export const Sidebar = () => {
                     </p>
                 </div>
 
-                {session && (
+                {session ? (
                     <button 
                         onClick={() => signOut()}
                         className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--muted-foreground)] hover:text-red-500 transition-colors"
                     >
                         <span className="material-symbols-outlined">logout</span>
                         <span className="text-sm font-medium">로그아웃</span>
+                    </button>
+                ) : (
+                    <button 
+                        onClick={() => signIn("google")}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-colors"
+                    >
+                        <span className="material-symbols-outlined">login</span>
+                        <span className="text-sm font-medium">로그인</span>
                     </button>
                 )}
             </div>

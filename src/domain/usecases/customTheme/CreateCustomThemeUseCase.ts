@@ -4,7 +4,10 @@ import { CreateCustomThemeInput, CustomTheme } from "@/domain/types/customTheme"
 export class CreateCustomThemeUseCase {
     constructor(private repository: ICustomThemeRepository) {}
 
-    async execute(input: CreateCustomThemeInput): Promise<CustomTheme> {
+    async execute(input: CreateCustomThemeInput, userId: string): Promise<CustomTheme> {
+        if (!userId || userId.trim().length === 0) {
+            throw new Error("User ID is required");
+        }
         if (!input.name || input.name.trim().length === 0) {
             throw new Error("테마 이름은 필수입니다");
         }
@@ -17,6 +20,6 @@ export class CreateCustomThemeUseCase {
             ...input,
             name: input.name.trim(),
             description: input.description?.trim(),
-        });
+        }, userId);
     }
 }

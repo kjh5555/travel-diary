@@ -1,31 +1,44 @@
 "use client"
 import { useEffect, useState } from "react";
-import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
-import { GetTripItinerariesUseCase } from "@/domain/usecases/itinerary/GetTripItinerariesUseCase";
-import { SavedItineraryPlace } from "@/domain/types/itinerary";
+import { useSession } from "next-auth/react";
+import { SavedItinerary, SavedItineraryPlace } from "@/domain/types/itinerary";
 import { PlaceImage } from "@/presentation/components/Place/PlaceImage";
 
 export default function MemoriesPage() {
+    const { data: session } = useSession();
     const [likedPlaces, setLikedPlaces] = useState<SavedItineraryPlace[]>([]);
 
     useEffect(() => {
         const loadMemories = async () => {
-            const repository = new LocalStorageItineraryRepository();
-            const useCase = new GetTripItinerariesUseCase(repository);
-            const itineraries = await useCase.execute();
+            if (!session?.user?.id) {
+                setLikedPlaces([]);
+                return;
+            }
 
-            const allLiked: SavedItineraryPlace[] = [];
-            itineraries.forEach(trip => {
-                trip.items.forEach(item => {
-                    if (item.memory?.isLiked) {
-                        allLiked.push(item);
-                    }
+            try {
+                const response = await fetch('/api/itineraries');
+                if (!response.ok) {
+                    setLikedPlaces([]);
+                    return;
+                }
+                const itineraries: SavedItinerary[] = await response.json();
+
+                const allLiked: SavedItineraryPlace[] = [];
+                itineraries.forEach((trip: SavedItinerary) => {
+                    trip.items.forEach((item: SavedItineraryPlace) => {
+                        if (item.memory?.isLiked) {
+                            allLiked.push(item);
+                        }
+                    });
                 });
-            });
-            setLikedPlaces(allLiked.reverse()); // Newest first
+                setLikedPlaces(allLiked.reverse());
+            } catch (error) {
+                console.error("Failed to load memories:", error);
+                setLikedPlaces([]);
+            }
         };
         loadMemories();
-    }, []);
+    }, [session]);
 
     // Grouping Logic
     const groupedPlaces = likedPlaces.reduce((acc, item) => {

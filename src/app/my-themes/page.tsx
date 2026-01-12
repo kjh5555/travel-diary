@@ -1,16 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { CustomTheme } from "@/domain/types/customTheme";
-import { LocalStorageCustomThemeRepository } from "@/data/repositories/LocalStorageCustomThemeRepository";
-import { GetCustomThemesUseCase } from "@/domain/usecases/customTheme/GetCustomThemesUseCase";
-import { DeleteCustomThemeUseCase } from "@/domain/usecases/customTheme/DeleteCustomThemeUseCase";
 import { CustomThemeCard } from "@/presentation/components/CustomTheme/CustomThemeCard";
 import { CreateCustomThemeModal } from "@/presentation/components/CustomTheme/CreateCustomThemeModal";
 import { CustomThemeDetailModal } from "@/presentation/components/CustomTheme/CustomThemeDetailModal";
 import { AddPlacesToThemeModal } from "@/presentation/components/CustomTheme/AddPlacesToThemeModal";
 
 export default function MyThemesPage() {
+    const { data: session } = useSession();
     const [themes, setThemes] = useState<CustomTheme[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -19,16 +18,31 @@ export default function MyThemesPage() {
     const [isAddPlacesModalOpen, setIsAddPlacesModalOpen] = useState(false);
 
     const loadThemes = async () => {
-        const repository = new LocalStorageCustomThemeRepository();
-        const useCase = new GetCustomThemesUseCase(repository);
-        const result = await useCase.execute();
-        setThemes(result.reverse());
-        setIsLoading(false);
+        if (!session?.user?.id) {
+            setThemes([]);
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/custom-themes');
+            if (!response.ok) {
+                setThemes([]);
+                return;
+            }
+            const result: CustomTheme[] = await response.json();
+            setThemes(result.reverse());
+        } catch (error) {
+            console.error("Failed to load themes:", error);
+            setThemes([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
         loadThemes();
-    }, []);
+    }, [session]);
 
     const handleThemeClick = (theme: CustomTheme) => {
         setSelectedTheme(theme);
@@ -37,11 +51,18 @@ export default function MyThemesPage() {
 
     const handleDeleteTheme = async (themeId: string) => {
         if (!confirm("이 테마를 삭제하시겠습니까?")) return;
+        if (!session?.user?.id) return;
         
-        const repository = new LocalStorageCustomThemeRepository();
-        const useCase = new DeleteCustomThemeUseCase(repository);
-        await useCase.execute(themeId);
-        loadThemes();
+        try {
+            const response = await fetch(`/api/custom-themes/${themeId}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                loadThemes();
+            }
+        } catch (error) {
+            console.error("Failed to delete theme:", error);
+        }
     };
 
     const handleAddPlaces = () => {
@@ -53,12 +74,16 @@ export default function MyThemesPage() {
         setIsAddPlacesModalOpen(false);
         await loadThemes();
         
-        if (selectedTheme) {
-            const repository = new LocalStorageCustomThemeRepository();
-            const updated = await repository.getById(selectedTheme.id);
-            if (updated) {
-                setSelectedTheme(updated);
-                setIsDetailModalOpen(true);
+        if (selectedTheme && session?.user?.id) {
+            try {
+                const response = await fetch(`/api/custom-themes/${selectedTheme.id}`);
+                if (response.ok) {
+                    const updated: CustomTheme = await response.json();
+                    setSelectedTheme(updated);
+                    setIsDetailModalOpen(true);
+                }
+            } catch (error) {
+                console.error("Failed to refresh theme:", error);
             }
         }
     };

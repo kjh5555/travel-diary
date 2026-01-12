@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { Place } from "@/domain/types/place";
 import { SavedItinerary } from "@/domain/types/itinerary";
 import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
@@ -18,6 +19,8 @@ interface UseAddPlaceToJourneyReturn {
 }
 
 export function useAddPlaceToJourney(): UseAddPlaceToJourneyReturn {
+    const { data: session } = useSession();
+    const userId = session?.user?.id || "anonymous";
     const [isLoading, setIsLoading] = useState(false);
     const [matchingJourneys, setMatchingJourneys] = useState<SavedItinerary[]>([]);
     const [placeCountry, setPlaceCountry] = useState<string | null>(null);
@@ -28,7 +31,7 @@ export function useAddPlaceToJourney(): UseAddPlaceToJourneyReturn {
         try {
             const repository = new LocalStorageItineraryRepository();
             const useCase = new FindMatchingJourneysForPlaceUseCase(repository);
-            const result = await useCase.execute(place);
+            const result = await useCase.execute(place, userId);
             
             setMatchingJourneys(result.journeys);
             setPlaceCountry(result.placeCountry);
@@ -38,7 +41,7 @@ export function useAddPlaceToJourney(): UseAddPlaceToJourneyReturn {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [userId]);
 
     const addPlaceToJourney = useCallback(async (params: AddPlaceToJourneyParams): Promise<SavedItinerary> => {
         setIsLoading(true);

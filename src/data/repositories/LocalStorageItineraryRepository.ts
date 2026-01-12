@@ -5,26 +5,25 @@ import { Itinerary, ItineraryItem, SavedItinerary } from "@/domain/types/itinera
 const STORAGE_KEY = "trip_itineraries";
 
 export class LocalStorageItineraryRepository implements IItineraryRepository {
-    getItinerary(id: string): Promise<Itinerary | null> {
+    getItinerary(_id: string, _userId: string): Promise<Itinerary | null> {
         throw new Error("Method not implemented.");
     }
-    saveItinerary(itinerary: Itinerary): Promise<Itinerary> {
+    saveItinerary(_itinerary: Itinerary, _userId: string): Promise<Itinerary> {
         throw new Error("Method not implemented.");
     }
-    addItem(itineraryId: string, item: ItineraryItem): Promise<Itinerary> {
+    addItem(_itineraryId: string, _item: ItineraryItem, _userId: string): Promise<Itinerary> {
         throw new Error("Method not implemented.");
     }
-    removeItem(itineraryId: string, itemId: string): Promise<Itinerary> {
+    removeItem(_itineraryId: string, _itemId: string, _userId: string): Promise<Itinerary> {
         throw new Error("Method not implemented.");
     }
-    updateItem(itineraryId: string, item: ItineraryItem): Promise<Itinerary> {
+    updateItem(_itineraryId: string, _item: ItineraryItem, _userId: string): Promise<Itinerary> {
         throw new Error("Method not implemented.");
     }
 
-    async saveTripItinerary(itinerary: SavedItinerary): Promise<void> {
+    async saveTripItinerary(itinerary: SavedItinerary, _userId: string): Promise<void> {
         if (typeof window === 'undefined') return;
-        const current = await this.getAllTripItineraries();
-        // Check if exists and update, or add new
+        const current = await this.getAllTripItineraries(_userId);
         const index = current.findIndex(i => i.id === itinerary.id);
         if (index >= 0) {
             current[index] = itinerary;
@@ -34,7 +33,7 @@ export class LocalStorageItineraryRepository implements IItineraryRepository {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
     }
 
-    async getAllTripItineraries(): Promise<SavedItinerary[]> {
+    async getAllTripItineraries(_userId: string): Promise<SavedItinerary[]> {
         if (typeof window === 'undefined') return [];
         const data = localStorage.getItem(STORAGE_KEY);
         if (!data) return [];
@@ -46,14 +45,14 @@ export class LocalStorageItineraryRepository implements IItineraryRepository {
         }
     }
 
-    async getTripItinerary(id: string): Promise<SavedItinerary | null> {
-        const all = await this.getAllTripItineraries();
+    async getTripItinerary(id: string, _userId: string): Promise<SavedItinerary | null> {
+        const all = await this.getAllTripItineraries(_userId);
         return all.find(i => i.id === id) || null;
     }
 
-    async deleteTripItinerary(id: string): Promise<void> {
+    async deleteTripItinerary(id: string, _userId: string): Promise<void> {
         if (typeof window === 'undefined') return;
-        const current = await this.getAllTripItineraries();
+        const current = await this.getAllTripItineraries(_userId);
         const filtered = current.filter(i => i.id !== id);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     }

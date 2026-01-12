@@ -1,13 +1,13 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { CustomTheme, CUSTOM_THEME_COLORS } from "@/domain/types/customTheme";
 import { Place } from "@/domain/types/place";
 import { MapContainer } from "@/presentation/components/Map/MapContainer";
 import { GooglePlaceRepository } from "@/data/repositories/GooglePlaceRepository";
 import { SearchPlacesUseCase } from "@/domain/usecases/place/SearchPlacesUseCase";
-import { LocalStorageCustomThemeRepository } from "@/data/repositories/LocalStorageCustomThemeRepository";
-import { AddPlaceToThemeUseCase } from "@/domain/usecases/customTheme/AddPlaceToThemeUseCase";
+
 
 interface AddPlacesToThemeModalProps {
     theme: CustomTheme;
@@ -22,6 +22,7 @@ export const AddPlacesToThemeModal: React.FC<AddPlacesToThemeModalProps> = ({
     onClose,
     onComplete,
 }) => {
+    const { data: session } = useSession();
     const [selectedPlaces, setSelectedPlaces] = useState<Place[]>([]);
     const [query, setQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Place[]>([]);
@@ -129,18 +130,30 @@ export const AddPlacesToThemeModal: React.FC<AddPlacesToThemeModalProps> = ({
 
     const handleSave = async () => {
         if (selectedPlaces.length === 0) return;
+        if (!session?.user?.id) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
 
         setIsSaving(true);
         try {
-            const repository = new LocalStorageCustomThemeRepository();
-            const addPlaceUseCase = new AddPlaceToThemeUseCase(repository);
-
             for (const place of selectedPlaces) {
-                await addPlaceUseCase.execute(theme.id, place);
+                const response = await fetch(`/api/custom-themes/${theme.id}/places`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ place }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("장소 추가에 실패했습니다.");
+                }
             }
 
             onComplete?.();
             handleClose();
+        } catch (error) {
+            console.error("Failed to add places:", error);
+            alert("장소 추가에 실패했습니다.");
         } finally {
             setIsSaving(false);
         }

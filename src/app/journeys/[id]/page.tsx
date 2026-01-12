@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { SavedItinerary, PlaceMemory } from "@/domain/types/itinerary";
 import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
@@ -14,6 +15,8 @@ import { getItineraryStatus } from "@/domain/utils/dateUtils";
 export default function JourneyDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const { data: session } = useSession();
+    const userId = session?.user?.id || "anonymous";
     const [itinerary, setItinerary] = useState<SavedItinerary | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -24,7 +27,7 @@ export default function JourneyDetailPage() {
         try {
             const repository = new LocalStorageItineraryRepository();
             const useCase = new GetTripItineraryUseCase(repository);
-            const result = await useCase.execute(params.id);
+            const result = await useCase.execute(params.id, userId);
             setItinerary(result);
         } catch (error) {
             console.error("Failed to load itinerary:", error);
@@ -53,7 +56,7 @@ export default function JourneyDetailPage() {
 
         const repository = new LocalStorageItineraryRepository();
         const updateUseCase = new UpdateTripMemoryUseCase(repository);
-        await updateUseCase.execute(itinerary.id, updatedItinerary);
+        await updateUseCase.execute(itinerary.id, updatedItinerary, userId);
 
         setItinerary(updatedItinerary);
     };
@@ -99,14 +102,14 @@ export default function JourneyDetailPage() {
         const updatedItinerary = { ...itinerary, coverImage, thumbnail };
         const repository = new LocalStorageItineraryRepository();
         const updateUseCase = new UpdateTripMemoryUseCase(repository);
-        await updateUseCase.execute(itinerary.id, updatedItinerary);
+        await updateUseCase.execute(itinerary.id, updatedItinerary, userId);
         setItinerary(updatedItinerary);
     };
 
     const handleUpdateItinerary = async (updatedItinerary: SavedItinerary) => {
         const repository = new LocalStorageItineraryRepository();
         const updateUseCase = new UpdateTripMemoryUseCase(repository);
-        await updateUseCase.execute(updatedItinerary.id, updatedItinerary);
+        await updateUseCase.execute(updatedItinerary.id, updatedItinerary, userId);
         setItinerary(updatedItinerary);
     };
 

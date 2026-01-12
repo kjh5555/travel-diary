@@ -4,9 +4,12 @@ import { UpdateCustomThemeInput, CustomTheme } from "@/domain/types/customTheme"
 export class UpdateCustomThemeUseCase {
     constructor(private repository: ICustomThemeRepository) {}
 
-    async execute(id: string, input: UpdateCustomThemeInput): Promise<CustomTheme | null> {
+    async execute(id: string, input: UpdateCustomThemeInput, userId: string): Promise<CustomTheme | null> {
         if (!id) {
             throw new Error("테마 ID는 필수입니다");
+        }
+        if (!userId) {
+            throw new Error("User ID is required");
         }
 
         if (input.name !== undefined) {
@@ -22,6 +25,6 @@ export class UpdateCustomThemeUseCase {
             ...input,
             name: input.name?.trim(),
             description: input.description?.trim(),
-        });
+        }, userId);
     }
 }

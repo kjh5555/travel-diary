@@ -6,15 +6,20 @@ export interface AddPlaceToJourneyParams {
     place: Place;
     journeyId: string;
     day: number;
+    userId: string;
 }
 
 export class AddPlaceToJourneyUseCase {
     constructor(private repository: IItineraryRepository) {}
 
     async execute(params: AddPlaceToJourneyParams): Promise<SavedItinerary> {
-        const { place, journeyId, day } = params;
+        const { place, journeyId, day, userId } = params;
         
-        const journey = await this.repository.getTripItinerary(journeyId);
+        if (!userId || userId.trim().length === 0) {
+            throw new Error("User ID is required");
+        }
+        
+        const journey = await this.repository.getTripItinerary(journeyId, userId);
         
         if (!journey) {
             throw new Error(`Journey with id ${journeyId} not found`);
@@ -33,7 +38,7 @@ export class AddPlaceToJourneyUseCase {
             items: updatedItems
         };
         
-        await this.repository.saveTripItinerary(updatedJourney);
+        await this.repository.saveTripItinerary(updatedJourney, userId);
         
         return updatedJourney;
     }

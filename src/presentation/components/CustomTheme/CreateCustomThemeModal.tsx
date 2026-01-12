@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { 
     CUSTOM_THEME_COLORS, 
     CUSTOM_THEME_ICONS,
@@ -11,9 +12,7 @@ import { Place } from "@/domain/types/place";
 import { MapContainer } from "@/presentation/components/Map/MapContainer";
 import { GooglePlaceRepository } from "@/data/repositories/GooglePlaceRepository";
 import { SearchPlacesUseCase } from "@/domain/usecases/place/SearchPlacesUseCase";
-import { LocalStorageCustomThemeRepository } from "@/data/repositories/LocalStorageCustomThemeRepository";
-import { CreateCustomThemeUseCase } from "@/domain/usecases/customTheme/CreateCustomThemeUseCase";
-import { AddPlaceToThemeUseCase } from "@/domain/usecases/customTheme/AddPlaceToThemeUseCase";
+import { CustomTheme } from "@/domain/types/customTheme";
 
 interface CreateCustomThemeModalProps {
     isOpen: boolean;
@@ -26,6 +25,7 @@ export const CreateCustomThemeModal: React.FC<CreateCustomThemeModalProps> = ({
     onClose,
     onCreated,
 }) => {
+    const { data: session } = useSession();
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [selectedColor, setSelectedColor] = useState(DEFAULT_THEME_COLOR);
@@ -133,27 +133,39 @@ export const CreateCustomThemeModal: React.FC<CreateCustomThemeModalProps> = ({
     };
 
     const handleSave = async () => {
-        if (!name.trim() || selectedPlaces.length === 0) return;
+        if (!name.trim() || selectedPlaces.length === 0 || !session?.user?.id) return;
 
         setIsSaving(true);
         try {
-            const repository = new LocalStorageCustomThemeRepository();
-            const createUseCase = new CreateCustomThemeUseCase(repository);
-            const addPlaceUseCase = new AddPlaceToThemeUseCase(repository);
-
-            const theme = await createUseCase.execute({
-                name: name.trim(),
-                description: description.trim() || undefined,
-                color: selectedColor.value,
-                icon: selectedIcon,
+            const createResponse = await fetch('/api/custom-themes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name.trim(),
+                    description: description.trim() || undefined,
+                    color: selectedColor.value,
+                    icon: selectedIcon,
+                }),
             });
 
+            if (!createResponse.ok) {
+                throw new Error('Failed to create theme');
+            }
+
+            const theme: CustomTheme = await createResponse.json();
+
             for (const place of selectedPlaces) {
-                await addPlaceUseCase.execute(theme.id, place);
+                await fetch(`/api/custom-themes/${theme.id}/places`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ place }),
+                });
             }
 
             onCreated?.();
             handleClose();
+        } catch (error) {
+            console.error("Failed to save theme:", error);
         } finally {
             setIsSaving(false);
         }

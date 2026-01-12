@@ -1,10 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSession, signIn } from "next-auth/react";
 import { Place } from "@/domain/types/place";
 import { Route, SavedItinerary, SavedItineraryPlace } from "@/domain/types/itinerary";
 import { GoogleRouteRepository } from "@/data/repositories/GoogleRouteRepository";
-import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
 import { CalculateRouteUseCase } from "@/domain/usecases/itinerary/CalculateRouteUseCase";
-import { SaveTripItineraryUseCase } from "@/domain/usecases/itinerary/SaveTripItineraryUseCase";
 
 export type ViewMode = 'planning' | 'itinerary';
 export type TransportMode = 'TRANSIT' | 'DRIVING' | 'WALKING';
@@ -29,7 +28,9 @@ export interface ItineraryItemWrapper {
 }
 
 export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?: () => void) => {
-    // Basic Info
+    const { data: session } = useSession();
+    const userId = session?.user?.id || "anonymous";
+    
     const [title, setTitle] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -214,8 +215,13 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
     const handleSaveItinerary = async () => {
         if (!startDate || !endDate) return;
 
-        const repository = new LocalStorageItineraryRepository();
-        const saveUseCase = new SaveTripItineraryUseCase(repository);
+        if (!session?.user?.id) {
+            const confirmed = confirm("여행을 저장하려면 로그인이 필요합니다. 로그인 하시겠습니까?");
+            if (confirmed) {
+                signIn("google");
+            }
+            return;
+        }
 
         const itemsToSave: SavedItineraryPlace[] = itineraryItems.map(item => ({
             place: item.place,
@@ -235,8 +241,27 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
             createdAt: new Date().toISOString()
         };
 
-        await saveUseCase.execute(itineraryToSave);
-        if (onClose) onClose();
+        try {
+            const isUpdate = !!initialData?.id;
+            const url = isUpdate ? `/api/itineraries/${itineraryToSave.id}` : '/api/itineraries';
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(itineraryToSave),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || '저장에 실패했습니다.');
+            }
+
+            if (onClose) onClose();
+        } catch (error) {
+            console.error("Failed to save itinerary:", error);
+            alert(error instanceof Error ? error.message : '저장에 실패했습니다.');
+        }
     };
 
     return {

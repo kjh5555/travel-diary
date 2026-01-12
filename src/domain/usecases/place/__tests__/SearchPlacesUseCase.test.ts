@@ -41,9 +41,9 @@ describe('SearchPlacesUseCase', () => {
     it('should search places successfully', async () => {
         vi.mocked(mockRepository.searchPlaces).mockResolvedValue(mockPlaces);
 
-        const result = await useCase.execute('Osaka');
+        const result = await useCase.execute({ query: 'Osaka' });
 
-        expect(mockRepository.searchPlaces).toHaveBeenCalledWith('Osaka');
+        expect(mockRepository.searchPlaces).toHaveBeenCalledWith({ query: 'Osaka' });
         expect(result).toEqual(mockPlaces);
         expect(result).toHaveLength(2);
     });
@@ -51,27 +51,27 @@ describe('SearchPlacesUseCase', () => {
     it('should trim query before searching', async () => {
         vi.mocked(mockRepository.searchPlaces).mockResolvedValue(mockPlaces);
 
-        await useCase.execute('  Osaka  ');
+        await useCase.execute({ query: '  Osaka  ' });
 
-        expect(mockRepository.searchPlaces).toHaveBeenCalledWith('Osaka');
+        expect(mockRepository.searchPlaces).toHaveBeenCalledWith({ query: 'Osaka' });
     });
 
     it('should return empty array when no places found', async () => {
         vi.mocked(mockRepository.searchPlaces).mockResolvedValue([]);
 
-        const result = await useCase.execute('NonexistentPlace');
+        const result = await useCase.execute({ query: 'NonexistentPlace' });
 
         expect(result).toEqual([]);
         expect(result).toHaveLength(0);
     });
 
     it('should throw error when query is empty', async () => {
-        await expect(useCase.execute('')).rejects.toThrow('Search query cannot be empty');
+        await expect(useCase.execute({ query: '' })).rejects.toThrow('Search query cannot be empty');
         expect(mockRepository.searchPlaces).not.toHaveBeenCalled();
     });
 
     it('should throw error when query is only whitespace', async () => {
-        await expect(useCase.execute('   ')).rejects.toThrow('Search query cannot be empty');
+        await expect(useCase.execute({ query: '   ' })).rejects.toThrow('Search query cannot be empty');
         expect(mockRepository.searchPlaces).not.toHaveBeenCalled();
     });
 
@@ -79,6 +79,6 @@ describe('SearchPlacesUseCase', () => {
         const error = new Error('API Error');
         vi.mocked(mockRepository.searchPlaces).mockRejectedValue(error);
 
-        await expect(useCase.execute('Osaka')).rejects.toThrow('API Error');
+        await expect(useCase.execute({ query: 'Osaka' })).rejects.toThrow('API Error');
     });
 });

@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==========================================
+// NextAuth Required Models
+// ==========================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // NextAuth relations
+  accounts Account[]
+  sessions Session[]
+
+  // Business relations
+  customThemes     CustomTheme[]
+  savedItineraries SavedItinerary[]
+  animeSpotLikes   AnimeSpotLike[]
+  themeSpotLikes   ThemeSpotLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// Business Domain Models
+// ==========================================
+
+model AnimeSpot {
+  id               String  @id @default(cuid())
+  title            String
+  sceneName        String
+  originalImageUrl String
+  realImageUrl     String?
+  lat              Float
+  lng              Float
+  guideTip         String
+  category         String // AnimeCategory enum as string
+  rating           Float
+  location         String
+  description      String?
+
+  likes AnimeSpotLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AnimeSpotLike {
+  id          String @id @default(cuid())
+  userId      String
+  animeSpotId String
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animeSpot AnimeSpot @relation(fields: [animeSpotId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, animeSpotId])
+}
+
+model ThemeSpot {
+  id          String  @id @default(cuid())
+  themeId     String // ThemeCategoryId
+  title       String
+  subtitle    String
+  imageUrl    String
+  lat         Float
+  lng         Float
+  tip         String
+  subCategory String // ThemeSubCategory
+  rating      Float
+  location    String
+  description String?
+
+  likes ThemeSpotLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ThemeSpotLike {
+  id          String @id @default(cuid())
+  userId      String
+  themeSpotId String
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  themeSpot ThemeSpot @relation(fields: [themeSpotId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, themeSpotId])
+}
+
+model CustomTheme {
+  id          String  @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  coverImage  String?
+  color       String
+  icon        String
+
+  user   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  places CustomThemePlace[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomThemePlace {
+  id            String  @id @default(cuid())
+  customThemeId String
+  note          String?
+
+  // Embedded Place data (denormalized for flexibility with Google Places)
+  placeId      String
+  placeName    String
+  placeAddress String
+  placeLat     Float
+  placeLng     Float
+  placeRating  Float?
+  placePhotos  String? // JSON array of photo URLs
+  placeTypes   String? // JSON array of type strings
+
+  customTheme CustomTheme @relation(fields: [customThemeId], references: [id], onDelete: Cascade)
+
+  addedAt DateTime @default(now())
+
+  @@unique([customThemeId, placeId])
+}
+
+model SavedItinerary {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String?
+  startDate DateTime
+  endDate   DateTime
+
+  // Airport data (embedded JSON for flexibility)
+  arrivalAirport   String? // JSON of Place
+  departureAirport String? // JSON of Place
+
+  coverImage String?
+  thumbnail  String?
+
+  user  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items SavedItineraryPlace[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SavedItineraryPlace {
+  id              String  @id @default(cuid())
+  itineraryId     String
+  day             Int
+  orderInDay      Int     @default(0)
+  isDayTransition Boolean @default(false)
+
+  // Embedded Place data
+  placeId      String
+  placeName    String
+  placeAddress String
+  placeLat     Float
+  placeLng     Float
+  placeRating  Float?
+  placePhotos  String? // JSON
+  placeTypes   String? // JSON
+
+  // Route to next (JSON blob for complex structure)
+  routeToNext String? // JSON of Route
+
+  // Memory data
+  memoryText      String?
+  memoryImages    String? // JSON array of base64/URLs
+  memoryTimestamp DateTime?
+  memoryIsLiked   Boolean @default(false)
+
+  itinerary SavedItinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([itineraryId, day])
+}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { 
     ThemeSpot, 
     ThemeCategoryId, 
@@ -22,6 +23,8 @@ import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePho
 export default function ThemeListPage() {
     const params = useParams();
     const router = useRouter();
+    const { data: session } = useSession();
+    const userId = session?.user?.id || "anonymous";
     const themeId = params.themeId as ThemeCategoryId;
     
     const [spots, setSpots] = useState<ThemeSpot[]>([]);
@@ -69,7 +72,7 @@ export default function ThemeListPage() {
         e.preventDefault();
         e.stopPropagation();
         
-        const updated = await toggleLikeUseCase.execute(id);
+        const updated = await toggleLikeUseCase.execute(id, userId);
         if (updated) {
             setSpots(prev => prev.map(s => s.id === id ? updated : s));
         }

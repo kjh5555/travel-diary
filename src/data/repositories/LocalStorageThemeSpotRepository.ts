@@ -393,11 +393,11 @@ export class LocalStorageThemeSpotRepository implements IThemeSpotRepository {
         }));
     }
 
-    async getAll(): Promise<ThemeSpot[]> {
+    async getAll(_userId?: string): Promise<ThemeSpot[]> {
         return this.enrichWithLikes(SEED_DATA);
     }
 
-    async getById(id: string): Promise<ThemeSpot | null> {
+    async getById(id: string, _userId?: string): Promise<ThemeSpot | null> {
         const spot = SEED_DATA.find(s => s.id === id);
         if (!spot) return null;
         
@@ -408,17 +408,17 @@ export class LocalStorageThemeSpotRepository implements IThemeSpotRepository {
         };
     }
 
-    async getByTheme(themeId: ThemeCategoryId): Promise<ThemeSpot[]> {
+    async getByTheme(themeId: ThemeCategoryId, _userId?: string): Promise<ThemeSpot[]> {
         const filtered = SEED_DATA.filter(s => s.themeId === themeId);
         return this.enrichWithLikes(filtered);
     }
 
-    async getBySubCategory(themeId: ThemeCategoryId, subCategory: ThemeSubCategory): Promise<ThemeSpot[]> {
+    async getBySubCategory(themeId: ThemeCategoryId, subCategory: ThemeSubCategory, _userId?: string): Promise<ThemeSpot[]> {
         const filtered = SEED_DATA.filter(s => s.themeId === themeId && s.subCategory === subCategory);
         return this.enrichWithLikes(filtered);
     }
 
-    async search(query: string, themeId?: ThemeCategoryId): Promise<ThemeSpot[]> {
+    async search(query: string, themeId?: ThemeCategoryId, _userId?: string): Promise<ThemeSpot[]> {
         const lowercaseQuery = query.toLowerCase();
         let filtered = SEED_DATA.filter(s => 
             s.title.toLowerCase().includes(lowercaseQuery) ||
@@ -434,7 +434,7 @@ export class LocalStorageThemeSpotRepository implements IThemeSpotRepository {
         return this.enrichWithLikes(filtered);
     }
 
-    async toggleLike(id: string): Promise<ThemeSpot | null> {
+    async toggleLike(id: string, _userId: string): Promise<ThemeSpot | null> {
         const spot = SEED_DATA.find(s => s.id === id);
         if (!spot) return null;
 
@@ -451,5 +451,11 @@ export class LocalStorageThemeSpotRepository implements IThemeSpotRepository {
             ...spot,
             isLiked: !isCurrentlyLiked
         };
+    }
+
+    async getLikedByUser(_userId: string): Promise<ThemeSpot[]> {
+        const likedIds = this.getLikedIds();
+        const likedSpots = SEED_DATA.filter(s => likedIds.includes(s.id));
+        return likedSpots.map(spot => ({ ...spot, isLiked: true }));
     }
 }

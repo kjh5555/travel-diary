@@ -9,6 +9,9 @@ import { ImageCropperModal } from "@/presentation/components/common/ImageCropper
 import { GooglePlaceRepository } from "@/data/repositories/GooglePlaceRepository";
 import { SearchPlacesUseCase } from "@/domain/usecases/place/SearchPlacesUseCase";
 import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePhoto";
+import { ShareJourneyModal } from "@/presentation/components/Share/ShareJourneyModal";
+import { TripCommentsSection } from "@/presentation/components/Share/TripCommentsSection";
+import { SharedPhotosGallery } from "@/presentation/components/Share/SharedPhotosGallery";
 
 interface OngoingJourneyDetailProps {
     itinerary: SavedItinerary;
@@ -16,6 +19,7 @@ interface OngoingJourneyDetailProps {
     onUpdateMemory: (placeIndex: number, memory: PlaceMemory) => void;
     onUpdateCoverImage: (coverImage: string, thumbnail?: string) => void;
     onUpdateItinerary: (updatedItinerary: SavedItinerary) => void;
+    currentUserId?: string;
 }
 
 export const OngoingJourneyDetail = ({
@@ -23,9 +27,11 @@ export const OngoingJourneyDetail = ({
     onBack,
     onUpdateMemory,
     onUpdateCoverImage,
-    onUpdateItinerary
+    onUpdateItinerary,
+    currentUserId
 }: OngoingJourneyDetailProps) => {
     const [selectedDay, setSelectedDay] = useState(0);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [map, setMap] = useState<google.maps.Map | null>(null);
     const [galleryImages, setGalleryImages] = useState<string[] | null>(null);
     const [galleryStartIndex, setGalleryStartIndex] = useState(0);
@@ -369,6 +375,13 @@ export const OngoingJourneyDetail = ({
                 />
             )}
 
+            <ShareJourneyModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                itineraryId={itinerary.id}
+                itineraryTitle={itinerary.title}
+            />
+
             <div className="flex h-full w-full -m-3 md:-m-10">
                 <main className="flex-1 flex flex-col h-full overflow-y-auto scroll-smooth relative">
                     <div className="w-full h-64 md:h-80 bg-[var(--secondary)] relative shrink-0 group overflow-hidden">
@@ -438,6 +451,13 @@ export const OngoingJourneyDetail = ({
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsShareModalOpen(true)}
+                                    className="flex items-center gap-2 bg-[var(--surface)] hover:bg-[var(--secondary)] px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all border border-[var(--border)]"
+                                >
+                                    <span className="material-symbols-outlined text-sm">group_add</span>
+                                    <span>공유</span>
+                                </button>
                                 <button
                                     onClick={() => setIsEditMode(!isEditMode)}
                                     className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all border ${isEditMode
@@ -775,6 +795,21 @@ export const OngoingJourneyDetail = ({
                                                                     className="w-full bg-transparent text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/50 focus:outline-none focus:ring-0 resize-none text-sm leading-relaxed"
                                                                     rows={2}
                                                                 />
+
+                                                                {currentUserId && (
+                                                                    <div onClick={(e) => e.stopPropagation()}>
+                                                                        <SharedPhotosGallery
+                                                                            placeId={item.place.id}
+                                                                            itineraryId={itinerary.id}
+                                                                            currentUserId={currentUserId}
+                                                                        />
+                                                                        <TripCommentsSection
+                                                                            placeId={item.place.id}
+                                                                            itineraryId={itinerary.id}
+                                                                            currentUserId={currentUserId}
+                                                                        />
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>

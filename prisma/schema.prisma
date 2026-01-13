@@ -29,6 +29,18 @@ model User {
   animeSpotLikes   AnimeSpotLike[]
   themeSpotLikes   ThemeSpotLike[]
 
+  // Friend relations
+  sentFriendRequests     FriendRequest[] @relation("SentRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
+  friendshipsAsUser      Friendship[]    @relation("FriendshipUser")
+  friendshipsAsFriend    Friendship[]    @relation("FriendshipFriend")
+
+  // Journey sharing relations
+  sharedJourneys     JourneyShare[]   @relation("JourneyOwner")
+  receivedShares     JourneyShare[]   @relation("JourneySharedWith")
+  tripComments       TripComment[]
+  tripPhotos         TripPhoto[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -190,8 +202,9 @@ model SavedItinerary {
   coverImage String?
   thumbnail  String?
 
-  user  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items SavedItineraryPlace[]
+  user   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  SavedItineraryPlace[]
+  shares JourneyShare[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -224,8 +237,114 @@ model SavedItineraryPlace {
   memoryIsLiked   Boolean @default(false)
 
   itinerary SavedItinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  
+  // Shared content relations
+  comments TripComment[]
+  photos   TripPhoto[]
 
   createdAt DateTime @default(now())
 
   @@index([itineraryId, day])
+}
+
+// ==========================================
+// Friend System Models
+// ==========================================
+
+model FriendRequest {
+  id         String              @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendRequestStatus @default(PENDING)
+  message    String?
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Friendship {
+  id       String @id @default(cuid())
+  userId   String
+  friendId String
+
+  user   User @relation("FriendshipUser", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendshipFriend", fields: [friendId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+}
+
+// ==========================================
+// Journey Sharing Models
+// ==========================================
+
+model JourneyShare {
+  id          String          @id @default(cuid())
+  itineraryId String
+  ownerId     String
+  sharedWithId String
+  permission  SharePermission @default(VIEW)
+
+  itinerary  SavedItinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  owner      User           @relation("JourneyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  sharedWith User           @relation("JourneySharedWith", fields: [sharedWithId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([itineraryId, sharedWithId])
+  @@index([sharedWithId])
+  @@index([ownerId])
+}
+
+enum SharePermission {
+  VIEW
+  EDIT
+}
+
+model TripComment {
+  id        String @id @default(cuid())
+  placeId   String
+  userId    String
+  content   String
+
+  place SavedItineraryPlace @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([placeId])
+  @@index([userId])
+}
+
+model TripPhoto {
+  id       String  @id @default(cuid())
+  placeId  String
+  userId   String
+  imageUrl String  // base64 or URL
+  caption  String?
+
+  place SavedItineraryPlace @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([placeId])
+  @@index([userId])
 }

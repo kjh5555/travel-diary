@@ -2,10 +2,12 @@
 
 import { useSession, signIn, signOut } from "next-auth/react"
 import { useState } from "react"
+import { FriendManagement } from "./Friends/FriendManagement"
 
 export const Header = () => {
     const { data: session } = useSession()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isFriendsOpen, setIsFriendsOpen] = useState(false)
 
     return (
         <header className="lg:hidden flex items-center justify-between p-4 bg-[var(--surface)] border-b border-[var(--border)]">
@@ -60,17 +62,28 @@ export const Header = () => {
                             <span className="text-sm font-medium">저장된 장소 지도</span>
                         </a>
                         {session && (
-                            <button 
-                                onClick={() => signOut()}
-                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors mt-2"
-                            >
-                                <span className="material-symbols-outlined">logout</span>
-                                <span className="text-sm font-medium">로그아웃</span>
-                            </button>
+                            <>
+                                <button 
+                                    onClick={() => { setIsFriendsOpen(true); setIsMobileMenuOpen(false); }}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[var(--secondary)] transition-colors"
+                                >
+                                    <span className="material-symbols-outlined">group</span>
+                                    <span className="text-sm font-medium">친구 관리</span>
+                                </button>
+                                <button 
+                                    onClick={() => signOut()}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors mt-2"
+                                >
+                                    <span className="material-symbols-outlined">logout</span>
+                                    <span className="text-sm font-medium">로그아웃</span>
+                                </button>
+                            </>
                         )}
                     </nav>
                 </div>
             )}
+
+            <FriendManagement isOpen={isFriendsOpen} onClose={() => setIsFriendsOpen(false)} />
         </header>
     )
 }

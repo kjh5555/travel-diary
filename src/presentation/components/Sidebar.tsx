@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signIn, signOut } from "next-auth/react"
+import { useState } from "react"
+import { FriendManagement } from "./Friends/FriendManagement"
 
 interface NavItem {
     label: string;
@@ -22,6 +24,7 @@ const navItems: NavItem[] = [
 export const Sidebar = () => {
     const pathname = usePathname()
     const { data: session } = useSession()
+    const [isFriendsOpen, setIsFriendsOpen] = useState(false)
 
     const isActive = (href: string) => {
         if (href === "/") return pathname === "/"
@@ -72,6 +75,15 @@ export const Sidebar = () => {
                             </Link>
                         )
                     })}
+                    {session && (
+                        <button
+                            onClick={() => setIsFriendsOpen(true)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--muted-foreground)] hover:bg-[var(--secondary)] group transition-all"
+                        >
+                            <span className="material-symbols-outlined group-hover:text-[var(--foreground)]">group</span>
+                            <span className="text-sm font-medium group-hover:text-[var(--foreground)]">친구 관리</span>
+                        </button>
+                    )}
                 </nav>
             </div>
 
@@ -104,6 +116,8 @@ export const Sidebar = () => {
                     </button>
                 )}
             </div>
+
+            <FriendManagement isOpen={isFriendsOpen} onClose={() => setIsFriendsOpen(false)} />
         </aside>
     )
 }

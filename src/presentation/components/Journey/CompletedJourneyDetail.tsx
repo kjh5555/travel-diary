@@ -35,14 +35,17 @@ export const CompletedJourneyDetail = ({
     const [tempHeaderImage, setTempHeaderImage] = useState<string | null>(null);
 
     const markersRef = useRef<google.maps.Marker[]>([]);
+    const polylinesRef = useRef<google.maps.Polyline[]>([]);
 
     useEffect(() => {
         if (!map) return;
 
         markersRef.current.forEach(m => m.setMap(null));
         markersRef.current = [];
+        polylinesRef.current.forEach(p => p.setMap(null));
+        polylinesRef.current = [];
 
-        const addMarker = (place: Place, color: string, zIndex: number = 100) => {
+        const addMarker = (place: Place, color: string, label?: string, zIndex: number = 100) => {
             const icons: Record<string, string> = {
                 red: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
                 blue: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
@@ -55,25 +58,36 @@ export const CompletedJourneyDetail = ({
                 map,
                 title: place.name,
                 icon: icons[color] || icons.blue,
+                label: label ? { text: label, color: "#fff", fontWeight: "bold", fontSize: "12px" } : undefined,
                 zIndex
             });
             markersRef.current.push(marker);
         };
 
-        const currentDayItems = itinerary.items.filter(item => item.day === selectedDay);
+        const currentDayItems = itinerary.items.filter(item => item.day === selectedDay && !item.isDayTransition);
+        const pathCoordinates: google.maps.LatLngLiteral[] = [];
 
-        currentDayItems.forEach(item => {
-            if (!item.isDayTransition) {
-                addMarker(item.place, "blue");
-            }
+        currentDayItems.forEach((item, index) => {
+            addMarker(item.place, "blue", String(index + 1));
+            pathCoordinates.push(item.place.location);
         });
 
-        if (focusedPlace) {
-            addMarker(focusedPlace, "yellow", 1000);
+        if (pathCoordinates.length > 1) {
+            const polyline = new google.maps.Polyline({
+                path: pathCoordinates,
+                geodesic: true,
+                strokeColor: "#3b82f6",
+                strokeOpacity: 0.8,
+                strokeWeight: 4,
+                map
+            });
+            polylinesRef.current.push(polyline);
+        }
 
+        if (focusedPlace) {
+            addMarker(focusedPlace, "yellow", undefined, 1000);
             map.panTo(focusedPlace.location);
 
-            // Smooth zoom effect
             const targetZoom = 15;
             const currentZoom = map.getZoom() || 12;
 

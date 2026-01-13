@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSession, signIn } from "next-auth/react";
 import { Place } from "@/domain/types/place";
-import { Route, SavedItinerary, SavedItineraryPlace } from "@/domain/types/itinerary";
+import { Route, SavedItinerary, SavedItineraryPlace, TravelType } from "@/domain/types/itinerary";
 import { GoogleRouteRepository } from "@/data/repositories/GoogleRouteRepository";
 import { CalculateRouteUseCase } from "@/domain/usecases/itinerary/CalculateRouteUseCase";
 
 export type ViewMode = 'planning' | 'itinerary';
 export type TransportMode = 'TRANSIT' | 'DRIVING' | 'WALKING';
+export { type TravelType };
 
 export interface WishlistItem {
     id: string;
@@ -32,6 +33,7 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
     const userId = session?.user?.id || "anonymous";
     
     const [title, setTitle] = useState("");
+    const [travelType, setTravelType] = useState<TravelType>('international');
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [currentDay, setCurrentDay] = useState(0);
@@ -50,10 +52,10 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
     // Settings
     const [transportMode, setTransportMode] = useState<TransportMode>('TRANSIT');
 
-    // Initialization
     useEffect(() => {
         if (initialData) {
             setTitle(initialData.title || "My Trip");
+            setTravelType(initialData.travelType || 'international');
             setStartDate(initialData.startDate);
             setEndDate(initialData.endDate);
 
@@ -64,23 +66,24 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
                 setDepartureAirport({ place: initialData.departureAirport });
             }
 
-            // Reconstruct dailyWishlists
             const newWishlists: Record<number, WishlistItem[]> = {};
-            initialData.items.forEach(item => {
-                if (!newWishlists[item.day]) newWishlists[item.day] = [];
-                newWishlists[item.day].push({
-                    id: crypto.randomUUID(),
-                    type: 'place',
-                    data: item.place,
-                    routeToNext: item.routeToNext
+            initialData.items
+                .filter(item => !item.isDayTransition)
+                .forEach(item => {
+                    if (!newWishlists[item.day]) newWishlists[item.day] = [];
+                    newWishlists[item.day].push({
+                        id: crypto.randomUUID(),
+                        type: 'place',
+                        data: item.place,
+                        routeToNext: item.routeToNext
+                    });
                 });
-            });
             setDailyWishlists(newWishlists);
             setItineraryItems(initialData.items);
             setViewMode('itinerary');
         } else {
-            // Reset
             setTitle("");
+            setTravelType('international');
             setStartDate("");
             setEndDate("");
             setDailyWishlists({});
@@ -90,6 +93,13 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
             setViewMode('planning');
         }
     }, [initialData]);
+
+    useEffect(() => {
+        if (travelType === 'domestic') {
+            setSelectedAirport(null);
+            setDepartureAirport(null);
+        }
+    }, [travelType]);
 
     // Derived Data
     const daysCount = useMemo(() => {
@@ -138,15 +148,12 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
         const routeRepo = new GoogleRouteRepository();
         const routeUseCase = new CalculateRouteUseCase(routeRepo);
 
-        // Build Sequence
         const sequence: { place: Place, day: number, isAirport?: boolean }[] = [];
 
-        // 1. Arrival Airport
-        if (selectedAirport) {
+        if (travelType === 'international' && selectedAirport) {
             sequence.push({ place: selectedAirport.place, day: 0, isAirport: true });
         }
 
-        // 2. Daily Items
         for (let i = 0; i < daysCount; i++) {
             const dayItems = dailyWishlists[i] || [];
             dayItems.forEach(item => {
@@ -154,8 +161,7 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
             });
         }
 
-        // 3. Departure Airport
-        if (departureAirport) {
+        if (travelType === 'international' && departureAirport) {
             sequence.push({ place: departureAirport.place, day: daysCount - 1, isAirport: true });
         }
 
@@ -233,10 +239,11 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
         const itineraryToSave: SavedItinerary = {
             id: initialData?.id || crypto.randomUUID(),
             title: title,
+            travelType,
             startDate,
             endDate,
-            arrivalAirport: selectedAirport?.place,
-            departureAirport: departureAirport?.place,
+            arrivalAirport: travelType === 'international' ? selectedAirport?.place : undefined,
+            departureAirport: travelType === 'international' ? departureAirport?.place : undefined,
             items: itemsToSave,
             createdAt: new Date().toISOString()
         };
@@ -253,11 +260,18 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || '저장에 실패했습니다.');
+                let errorMessage = '저장에 실패했습니다.';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch {
+                    errorMessage = `서버 오류 (${response.status})`;
+                }
+                throw new Error(errorMessage);
             }
 
             if (onClose) onClose();
+            window.location.reload();
         } catch (error) {
             console.error("Failed to save itinerary:", error);
             alert(error instanceof Error ? error.message : '저장에 실패했습니다.');
@@ -267,6 +281,7 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
     return {
         state: {
             title, setTitle,
+            travelType, setTravelType,
             startDate, setStartDate,
             endDate, setEndDate,
             isEditingDate, setIsEditingDate,

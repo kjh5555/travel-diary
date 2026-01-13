@@ -65,17 +65,20 @@ export interface SavedItineraryPlace {
     memory?: PlaceMemory;
 }
 
+export type TravelType = 'domestic' | 'international';
+
 export interface SavedItinerary {
     id: string;
     title?: string;
-    startDate: string; // YYYY-MM-DD
-    endDate: string; // YYYY-MM-DD
+    travelType: TravelType;
+    startDate: string;
+    endDate: string;
     arrivalAirport?: Place;
     departureAirport?: Place;
     items: SavedItineraryPlace[];
-    createdAt: string; // ISO timestamp
-    coverImage?: string; // Base64 or URL
-    thumbnail?: string; // Base64 or URL for list view
+    createdAt: string;
+    coverImage?: string;
+    thumbnail?: string;
 }
 
 export interface IRouteRepository {

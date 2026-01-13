@@ -1,11 +1,13 @@
 import React from 'react';
 import { Place } from "@/domain/types/place";
+import { TravelType } from "@/domain/types/itinerary";
 import { AirportItem, WishlistItem } from "@/presentation/hooks/useJourneyPlanner";
 import { SearchPlacesUseCase } from '@/domain/usecases/place/SearchPlacesUseCase';
 
 interface DailyScheduleListProps {
     currentDay: number;
     daysCount: number;
+    travelType: TravelType;
     selectedAirport: AirportItem | null;
     departureAirport: AirportItem | null;
     prevDayLastPlace: Place | null;
@@ -19,6 +21,7 @@ interface DailyScheduleListProps {
 export const DailyScheduleList: React.FC<DailyScheduleListProps> = ({
     currentDay,
     daysCount,
+    travelType,
     selectedAirport,
     departureAirport,
     prevDayLastPlace,
@@ -59,7 +62,7 @@ export const DailyScheduleList: React.FC<DailyScheduleListProps> = ({
 
     return (
         <div className="relative pl-6 border-l-2 border-[var(--border)] space-y-4 pb-8 mt-4">
-            {currentDay === 0 && selectedAirport && (
+            {currentDay === 0 && travelType === 'international' && selectedAirport && (
                 <div className="relative group">
                     <div className="absolute -left-[29px] top-3 w-4 h-4 rounded-full border-4 border-[var(--background)] z-10 bg-red-500"></div>
                     <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200 dark:border-red-800">
@@ -129,7 +132,7 @@ export const DailyScheduleList: React.FC<DailyScheduleListProps> = ({
                 </div>
             ))}
 
-            {currentDay === daysCount - 1 && (
+            {currentDay === daysCount - 1 && travelType === 'international' && (
                 <div className="p-5 border border-[var(--border)] rounded-xl bg-[var(--surface)] relative z-20 mt-6">
                     <h3 className="text-base font-bold mb-3 flex items-center gap-2">
                         <span className="material-symbols-outlined text-green-500">flight_takeoff</span>

@@ -23,8 +23,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    await repository.saveTripItinerary(body, session.user.id);
-
-    return NextResponse.json({ success: true }, { status: 201 });
+    try {
+        const body = await request.json();
+        await repository.saveTripItinerary(body, session.user.id);
+        return NextResponse.json({ success: true }, { status: 201 });
+    } catch (error) {
+        console.error("Failed to save itinerary:", error);
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : "저장에 실패했습니다." },
+            { status: 500 }
+        );
+    }
 }

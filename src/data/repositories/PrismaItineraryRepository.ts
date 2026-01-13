@@ -1,5 +1,5 @@
 import { IItineraryRepository } from "@/domain/repositories/IItineraryRepository";
-import { Itinerary, ItineraryItem, SavedItinerary, SavedItineraryPlace, Route, PlaceMemory } from "@/domain/types/itinerary";
+import { Itinerary, ItineraryItem, SavedItinerary, SavedItineraryPlace, Route, PlaceMemory, TravelType } from "@/domain/types/itinerary";
 import { Place } from "@/domain/types/place";
 import prisma from "@/lib/prisma";
 import { SavedItinerary as PrismaSavedItinerary, SavedItineraryPlace as PrismaSavedItineraryPlace } from "@prisma/client";
@@ -10,9 +10,11 @@ type SavedItineraryWithPlaces = PrismaSavedItinerary & {
 
 export class PrismaItineraryRepository implements IItineraryRepository {
     private mapToSavedItinerary(db: SavedItineraryWithPlaces): SavedItinerary {
+        const travelTypeValue = (db as { travelType?: string }).travelType;
         return {
             id: db.id,
             title: db.title || undefined,
+            travelType: (travelTypeValue as TravelType) || 'international',
             startDate: db.startDate.toISOString().split("T")[0],
             endDate: db.endDate.toISOString().split("T")[0],
             arrivalAirport: db.arrivalAirport ? JSON.parse(db.arrivalAirport) : undefined,
@@ -79,6 +81,7 @@ export class PrismaItineraryRepository implements IItineraryRepository {
         const data = {
             userId,
             title: itinerary.title,
+            travelType: itinerary.travelType,
             startDate: new Date(itinerary.startDate),
             endDate: new Date(itinerary.endDate),
             arrivalAirport: itinerary.arrivalAirport ? JSON.stringify(itinerary.arrivalAirport) : null,

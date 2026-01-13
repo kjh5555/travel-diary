@@ -35,16 +35,23 @@ export async function PUT(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params;
-    const body = await request.json();
+    try {
+        const { id } = await params;
+        const body = await request.json();
 
-    if (body.id !== id) {
-        return NextResponse.json({ error: "ID mismatch" }, { status: 400 });
+        if (body.id !== id) {
+            return NextResponse.json({ error: "ID mismatch" }, { status: 400 });
+        }
+
+        await repository.saveTripItinerary(body, session.user.id);
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Failed to update itinerary:", error);
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : "업데이트에 실패했습니다." },
+            { status: 500 }
+        );
     }
-
-    await repository.saveTripItinerary(body, session.user.id);
-
-    return NextResponse.json({ success: true });
 }
 
 export async function DELETE(

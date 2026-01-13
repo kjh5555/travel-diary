@@ -177,15 +177,15 @@ model CustomThemePlace {
 }
 
 model SavedItinerary {
-  id        String   @id @default(cuid())
-  userId    String
-  title     String?
-  startDate DateTime
-  endDate   DateTime
+  id         String   @id @default(cuid())
+  userId     String
+  title      String?
+  travelType String   @default("international")
+  startDate  DateTime
+  endDate    DateTime
 
-  // Airport data (embedded JSON for flexibility)
-  arrivalAirport   String? // JSON of Place
-  departureAirport String? // JSON of Place
+  arrivalAirport   String?
+  departureAirport String?
 
   coverImage String?
   thumbnail  String?

@@ -60,8 +60,12 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
                 },
                 (error) => console.error(error)
             );
-        } else if (initialData?.arrivalAirport) {
-            setMapCenter(initialData.arrivalAirport.location);
+        } else if (initialData) {
+            const firstLocation = initialData.arrivalAirport?.location 
+                || initialData.items.find(i => !i.isDayTransition)?.place.location;
+            if (firstLocation) {
+                setMapCenter(firstLocation);
+            }
         }
     }, [isOpen, initialData]);
 
@@ -107,6 +111,7 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
 
                 <JourneyMapPanel
                     currentDay={state.currentDay}
+                    travelType={state.travelType}
                     selectedAirport={state.selectedAirport}
                     departureAirport={state.departureAirport}
                     prevDayLastPlace={state.prevDayLastPlace}
@@ -152,6 +157,35 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
                         )}
                         <p className="text-sm text-[var(--muted-foreground)]">일정을 계획하고 장소를 추가하세요</p>
 
+                        {state.viewMode === 'planning' && (
+                            <div className="mt-4 flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => state.setTravelType('domestic')}
+                                    className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                                        state.travelType === 'domestic'
+                                            ? 'bg-[var(--primary)] text-white shadow-md'
+                                            : 'bg-[var(--secondary)] text-[var(--muted-foreground)] hover:bg-[var(--border)]'
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined text-lg">home</span>
+                                    국내여행
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => state.setTravelType('international')}
+                                    className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                                        state.travelType === 'international'
+                                            ? 'bg-[var(--primary)] text-white shadow-md'
+                                            : 'bg-[var(--secondary)] text-[var(--muted-foreground)] hover:bg-[var(--border)]'
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined text-lg">flight</span>
+                                    해외여행
+                                </button>
+                            </div>
+                        )}
+
                         <div className="mt-4">
                             <DateSelector
                                 startDate={state.startDate}
@@ -175,7 +209,7 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
                             />
 
                             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                                {state.currentDay === 0 && (
+                                {state.currentDay === 0 && state.travelType === 'international' && (
                                     <div className="p-5 border border-[var(--border)] rounded-xl bg-[var(--surface)] relative z-20">
                                         <h3 className="text-base font-bold mb-3 flex items-center gap-2">
                                             <span className="material-symbols-outlined text-[var(--primary)]">flight_takeoff</span>
@@ -227,6 +261,7 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
                                 <DailyScheduleList
                                     currentDay={state.currentDay}
                                     daysCount={state.daysCount}
+                                    travelType={state.travelType}
                                     selectedAirport={state.selectedAirport}
                                     departureAirport={state.departureAirport}
                                     prevDayLastPlace={state.prevDayLastPlace}

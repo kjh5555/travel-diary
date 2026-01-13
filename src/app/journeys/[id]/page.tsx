@@ -5,9 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { SavedItinerary, PlaceMemory } from "@/domain/types/itinerary";
-import { LocalStorageItineraryRepository } from "@/data/repositories/LocalStorageItineraryRepository";
-import { GetTripItineraryUseCase } from "@/domain/usecases/itinerary/GetTripItineraryUseCase";
-import { UpdateTripMemoryUseCase } from "@/domain/usecases/itinerary/UpdateTripMemoryUseCase";
 import { CompletedJourneyDetail } from "@/presentation/components/Journey/CompletedJourneyDetail";
 import { OngoingJourneyDetail } from "@/presentation/components/Journey/OngoingJourneyDetail";
 import { getItineraryStatus } from "@/domain/utils/dateUtils";
@@ -16,7 +13,6 @@ export default function JourneyDetailPage() {
     const params = useParams();
     const router = useRouter();
     const { data: session } = useSession();
-    const userId = session?.user?.id || "anonymous";
     const [itinerary, setItinerary] = useState<SavedItinerary | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -25,10 +21,11 @@ export default function JourneyDetailPage() {
 
         setIsLoading(true);
         try {
-            const repository = new LocalStorageItineraryRepository();
-            const useCase = new GetTripItineraryUseCase(repository);
-            const result = await useCase.execute(params.id, userId);
-            setItinerary(result);
+            const response = await fetch(`/api/itineraries/${params.id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setItinerary(data);
+            }
         } catch (error) {
             console.error("Failed to load itinerary:", error);
         } finally {
@@ -54,11 +51,16 @@ export default function JourneyDetailPage() {
             items: updatedItems
         };
 
-        const repository = new LocalStorageItineraryRepository();
-        const updateUseCase = new UpdateTripMemoryUseCase(repository);
-        await updateUseCase.execute(itinerary.id, updatedItinerary, userId);
-
-        setItinerary(updatedItinerary);
+        try {
+            await fetch(`/api/itineraries/${itinerary.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedItinerary),
+            });
+            setItinerary(updatedItinerary);
+        } catch (error) {
+            console.error("Failed to update memory:", error);
+        }
     };
 
     if (isLoading) {
@@ -100,17 +102,29 @@ export default function JourneyDetailPage() {
         if (!itinerary) return;
         
         const updatedItinerary = { ...itinerary, coverImage, thumbnail };
-        const repository = new LocalStorageItineraryRepository();
-        const updateUseCase = new UpdateTripMemoryUseCase(repository);
-        await updateUseCase.execute(itinerary.id, updatedItinerary, userId);
-        setItinerary(updatedItinerary);
+        try {
+            await fetch(`/api/itineraries/${itinerary.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedItinerary),
+            });
+            setItinerary(updatedItinerary);
+        } catch (error) {
+            console.error("Failed to update cover image:", error);
+        }
     };
 
     const handleUpdateItinerary = async (updatedItinerary: SavedItinerary) => {
-        const repository = new LocalStorageItineraryRepository();
-        const updateUseCase = new UpdateTripMemoryUseCase(repository);
-        await updateUseCase.execute(updatedItinerary.id, updatedItinerary, userId);
-        setItinerary(updatedItinerary);
+        try {
+            await fetch(`/api/itineraries/${updatedItinerary.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedItinerary),
+            });
+            setItinerary(updatedItinerary);
+        } catch (error) {
+            console.error("Failed to update itinerary:", error);
+        }
     };
 
     if (journeyStatus === 'ongoing') {

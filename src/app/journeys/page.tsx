@@ -8,6 +8,7 @@ import { SavedItinerary } from "@/domain/types/itinerary";
 import { groupItinerariesByStatus, getItineraryStatus } from "@/domain/utils/dateUtils";
 import { NewJourneyModal } from "@/presentation/components/NewJourney/NewJourneyModal";
 import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePhoto";
+import { TripImageSlideshow } from "@/presentation/components/common/TripImageSlideshow";
 
 type TabType = 'all' | 'upcoming' | 'ongoing' | 'past';
 
@@ -264,36 +265,12 @@ function JourneyCard({ itinerary, onClick }: { itinerary: SavedItinerary; onClic
                 className={`w-full md:w-64 h-48 md:h-auto bg-center bg-no-repeat bg-cover relative ${status === 'past' ? 'grayscale group-hover:grayscale-0 transition-all duration-500' : ''
                     }`}
             >
-                {itinerary.thumbnail ? (
-                    <div className="absolute inset-0">
-                        <img
-                            src={itinerary.thumbnail}
-                            alt="Travel Thumbnail"
-                            className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-                        />
-                    </div>
-                ) : itinerary.coverImage ? (
-                    <div className="absolute inset-0">
-                        <img
-                            src={itinerary.coverImage}
-                            alt="Travel Cover"
-                            className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-                        />
-                    </div>
-                ) : (
-                    <GooglePlacePhoto
-                        query={firstPlace?.name || locationName}
-                        location={firstPlace?.location}
-                        className="absolute inset-0 w-full h-full"
-                        maxWidth={400}
-                        maxHeight={300}
-                        fallback={
-                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/30 to-[var(--primary)]/10 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-[var(--primary)]/50 text-4xl">photo_camera</span>
-                            </div>
-                        }
-                    />
-                )}
+                <TripImageSlideshow
+                    itinerary={itinerary}
+                    className="absolute inset-0 w-full h-full"
+                    interval={5000}
+                    includeMemoryPhotos={status === 'past'}
+                />
                 <div className="absolute top-3 left-3 md:hidden">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${badge.color} border shadow-sm`}>
                         {badge.text}

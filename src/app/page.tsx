@@ -12,6 +12,7 @@ import { ThemeSpot, SUB_CATEGORY_COLORS, SUB_CATEGORY_LABELS } from "@/domain/ty
 import { LocalStorageThemeSpotRepository } from "@/data/repositories/LocalStorageThemeSpotRepository";
 import { ToggleThemeSpotLikeUseCase } from "@/domain/usecases/themeSpot/ToggleThemeSpotLikeUseCase";
 import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePhoto";
+import { TripImageSlideshow } from "@/presentation/components/common/TripImageSlideshow";
 
 interface TravelStats {
   countries: number;
@@ -215,15 +216,10 @@ function UpcomingTripCard({ trip, onViewDetails }: { trip: SavedItinerary; onVie
     <div className="bg-[var(--surface)] rounded-2xl p-4 shadow-sm border border-[var(--border)]">
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-2/5 aspect-video md:aspect-auto h-64 md:h-auto rounded-xl relative overflow-hidden group cursor-pointer">
-          <GooglePlacePhoto
-            query={photoQuery}
-            location={photoLocation}
+          <TripImageSlideshow
+            itinerary={trip}
             className="absolute inset-0 w-full h-full"
-            maxWidth={800}
-            maxHeight={600}
-            fallback={
-              <div className="w-full h-full bg-gradient-to-br from-[var(--primary)]/20 to-[var(--primary)]/5" />
-            }
+            interval={5000}
           />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" onClick={onViewDetails} />
           <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
@@ -311,8 +307,6 @@ function RecentTripCard({ trip, onClick }: { trip: SavedItinerary; onClick: () =
     return startDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' });
   };
 
-  const thumbnailImage = trip.thumbnail || trip.coverImage;
-
   return (
     <div
       onClick={onClick}
@@ -321,17 +315,12 @@ function RecentTripCard({ trip, onClick }: { trip: SavedItinerary; onClick: () =
       <div
         className="h-20 w-20 rounded-lg bg-cover bg-center shrink-0 overflow-hidden"
       >
-        {thumbnailImage ? (
-          <img
-            src={thumbnailImage}
-            alt={trip.title || "여행 사진"}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[var(--primary)]/30 to-[var(--primary)]/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[var(--primary)]/50 text-2xl">photo_camera</span>
-          </div>
-        )}
+        <TripImageSlideshow
+          itinerary={trip}
+          className="w-full h-full"
+          interval={4000}
+          includeMemoryPhotos={true}
+        />
       </div>
       <div className="flex flex-col">
         <h4 className="font-bold group-hover:text-[var(--primary)] transition-colors">

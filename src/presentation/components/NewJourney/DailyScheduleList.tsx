@@ -115,7 +115,19 @@ export const DailyScheduleList: React.FC<DailyScheduleListProps> = ({
                     >
                         <div className="flex justify-between items-start">
                             <div className="flex-1 min-w-0">
-                                <h4 className="font-bold truncate">{item.data.name}</h4>
+                                <div className="flex items-center gap-2">
+                                    <h4 className="font-bold truncate">{item.data.name}</h4>
+                                    {item.addedBy && (
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-full">
+                                            {item.addedBy.image ? (
+                                                <img src={item.addedBy.image} alt="" className="w-3.5 h-3.5 rounded-full" />
+                                            ) : (
+                                                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>person</span>
+                                            )}
+                                            {item.addedBy.name || '친구'}
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-xs text-[var(--muted-foreground)] truncate">{item.data.address}</p>
                             </div>
                             <button

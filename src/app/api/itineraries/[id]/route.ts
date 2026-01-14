@@ -2,8 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { PrismaItineraryRepository } from "@/data/repositories/PrismaItineraryRepository";
+import { PrismaJourneyShareRepository } from "@/data/repositories/PrismaJourneyShareRepository";
+import prisma from "@/lib/prisma";
 
 const repository = new PrismaItineraryRepository();
+const shareRepository = new PrismaJourneyShareRepository();
+
+async function getItineraryOwner(itineraryId: string): Promise<string | null> {
+    const itinerary = await prisma.savedItinerary.findUnique({
+        where: { id: itineraryId },
+        select: { userId: true }
+    });
+    return itinerary?.userId || null;
+}
 
 export async function GET(
     _request: NextRequest,
@@ -16,7 +27,15 @@ export async function GET(
     }
 
     const { id } = await params;
-    const itinerary = await repository.getTripItinerary(id, session.user.id);
+    
+    let itinerary = await repository.getTripItinerary(id, session.user.id);
+    
+    if (!itinerary) {
+        const access = await shareRepository.hasAccess(id, session.user.id);
+        if (access.hasAccess) {
+            itinerary = await shareRepository.getSharedJourney(id, session.user.id);
+        }
+    }
 
     if (!itinerary) {
         return NextResponse.json({ error: "Itinerary not found" }, { status: 404 });
@@ -43,7 +62,28 @@ export async function PUT(
             return NextResponse.json({ error: "ID mismatch" }, { status: 400 });
         }
 
-        await repository.saveTripItinerary(body, session.user.id);
+        const existingOwned = await repository.getTripItinerary(id, session.user.id);
+        
+        if (existingOwned) {
+            await repository.saveTripItinerary(body, session.user.id, session.user.id);
+            return NextResponse.json({ success: true });
+        }
+
+        const access = await shareRepository.hasAccess(id, session.user.id);
+        if (!access.hasAccess) {
+            return NextResponse.json({ error: "Itinerary not found" }, { status: 404 });
+        }
+        
+        if (access.permission !== 'EDIT') {
+            return NextResponse.json({ error: "편집 권한이 없습니다." }, { status: 403 });
+        }
+
+        const originalOwner = await getItineraryOwner(id);
+        if (!originalOwner) {
+            return NextResponse.json({ error: "Itinerary not found" }, { status: 404 });
+        }
+
+        await repository.saveTripItinerary(body, originalOwner, session.user.id);
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Failed to update itinerary:", error);

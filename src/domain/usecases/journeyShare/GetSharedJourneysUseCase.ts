@@ -1,12 +1,16 @@
 import { IJourneyShareRepository } from "@/domain/repositories/IJourneyShareRepository";
 import { SharedJourneyInfo } from "@/domain/types/friend";
-import { SavedItinerary } from "@/domain/types/itinerary";
+import { SavedItinerary, SavedItineraryWithShare } from "@/domain/types/itinerary";
 
 export class GetSharedJourneysUseCase {
     constructor(private repository: IJourneyShareRepository) {}
 
     async executeSharedWithMe(userId: string): Promise<SharedJourneyInfo[]> {
         return await this.repository.getSharedWithMe(userId);
+    }
+
+    async executeSharedWithMeFull(userId: string): Promise<SavedItineraryWithShare[]> {
+        return await this.repository.getSharedWithMeFull(userId);
     }
 
     async executeGetJourney(itineraryId: string, userId: string): Promise<SavedItinerary | null> {

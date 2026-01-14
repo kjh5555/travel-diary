@@ -28,6 +28,7 @@ model User {
   savedItineraries SavedItinerary[]
   animeSpotLikes   AnimeSpotLike[]
   themeSpotLikes   ThemeSpotLike[]
+  addedPlaces      SavedItineraryPlace[] @relation("PlaceAddedBy")
 
   // Friend relations
   sentFriendRequests     FriendRequest[] @relation("SentRequests")
@@ -217,6 +218,10 @@ model SavedItineraryPlace {
   orderInDay      Int     @default(0)
   isDayTransition Boolean @default(false)
 
+  // Who added this place (for collaborative editing)
+  addedByUserId String?
+  addedBy       User?   @relation("PlaceAddedBy", fields: [addedByUserId], references: [id], onDelete: SetNull)
+
   // Embedded Place data
   placeId      String
   placeName    String
@@ -245,6 +250,7 @@ model SavedItineraryPlace {
   createdAt DateTime @default(now())
 
   @@index([itineraryId, day])
+  @@index([addedByUserId])
 }
 
 // ==========================================

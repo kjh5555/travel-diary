@@ -1,6 +1,6 @@
 import { IJourneyShareRepository } from "@/domain/repositories/IJourneyShareRepository";
 import { JourneyShare, SharePermission, TripComment, TripPhoto, SharedJourneyInfo } from "@/domain/types/friend";
-import { SavedItinerary, SavedItineraryPlace, PlaceMemory, TravelType } from "@/domain/types/itinerary";
+import { SavedItinerary, SavedItineraryPlace, SavedItineraryWithShare, PlaceMemory, TravelType } from "@/domain/types/itinerary";
 import { Place } from "@/domain/types/place";
 import prisma from "@/lib/prisma";
 
@@ -109,6 +109,41 @@ export class PrismaJourneyShareRepository implements IJourneyShareRepository {
             },
             sharedAt: s.createdAt.toISOString()
         }));
+    }
+
+    async getSharedWithMeFull(userId: string): Promise<SavedItineraryWithShare[]> {
+        const shares = await prisma.journeyShare.findMany({
+            where: { sharedWithId: userId },
+            include: {
+                itinerary: {
+                    include: {
+                        items: {
+                            orderBy: [{ day: 'asc' }, { orderInDay: 'asc' }]
+                        }
+                    }
+                },
+                owner: true
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return shares.map(share => {
+            const itinerary = this.mapToSavedItinerary(share.itinerary);
+            return {
+                ...itinerary,
+                shareInfo: {
+                    isShared: true,
+                    sharedBy: {
+                        id: share.owner.id,
+                        name: share.owner.name,
+                        email: share.owner.email,
+                        image: share.owner.image
+                    },
+                    permission: share.permission as 'VIEW' | 'EDIT',
+                    sharedAt: share.createdAt.toISOString()
+                }
+            };
+        });
     }
 
     async getSharedJourney(itineraryId: string, userId: string): Promise<SavedItinerary | null> {

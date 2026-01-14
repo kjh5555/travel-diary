@@ -1,11 +1,15 @@
 import { IItineraryRepository } from "@/domain/repositories/IItineraryRepository";
-import { Itinerary, ItineraryItem, SavedItinerary, SavedItineraryPlace, Route, PlaceMemory, TravelType } from "@/domain/types/itinerary";
+import { Itinerary, ItineraryItem, SavedItinerary, SavedItineraryPlace, Route, PlaceMemory, TravelType, PlaceAddedBy } from "@/domain/types/itinerary";
 import { Place } from "@/domain/types/place";
 import prisma from "@/lib/prisma";
-import { SavedItinerary as PrismaSavedItinerary, SavedItineraryPlace as PrismaSavedItineraryPlace } from "@prisma/client";
+import { SavedItinerary as PrismaSavedItinerary, SavedItineraryPlace as PrismaSavedItineraryPlace, User } from "@prisma/client";
+
+type PrismaPlaceWithAddedBy = PrismaSavedItineraryPlace & {
+    addedBy?: User | null;
+};
 
 type SavedItineraryWithPlaces = PrismaSavedItinerary & {
-    items?: PrismaSavedItineraryPlace[];
+    items?: PrismaPlaceWithAddedBy[];
 };
 
 export class PrismaItineraryRepository implements IItineraryRepository {
@@ -26,7 +30,7 @@ export class PrismaItineraryRepository implements IItineraryRepository {
         };
     }
 
-    private mapToSavedItineraryPlace(db: PrismaSavedItineraryPlace): SavedItineraryPlace {
+    private mapToSavedItineraryPlace(db: PrismaPlaceWithAddedBy): SavedItineraryPlace {
         const place: Place = {
             id: db.placeId,
             name: db.placeName,
@@ -44,12 +48,21 @@ export class PrismaItineraryRepository implements IItineraryRepository {
             isLiked: db.memoryIsLiked,
         } : undefined;
 
+        const addedBy: PlaceAddedBy | undefined = db.addedBy ? {
+            id: db.addedBy.id,
+            name: db.addedBy.name,
+            email: db.addedBy.email,
+            image: db.addedBy.image,
+        } : undefined;
+
         return {
+            id: db.id,
             place,
             routeToNext: db.routeToNext ? JSON.parse(db.routeToNext) : undefined,
             day: db.day,
             isDayTransition: db.isDayTransition,
             memory,
+            addedBy,
         };
     }
 
@@ -73,9 +86,10 @@ export class PrismaItineraryRepository implements IItineraryRepository {
         throw new Error("Method not implemented");
     }
 
-    async saveTripItinerary(itinerary: SavedItinerary, userId: string): Promise<void> {
+    async saveTripItinerary(itinerary: SavedItinerary, userId: string, editorUserId?: string): Promise<void> {
         const existing = await prisma.savedItinerary.findFirst({
-            where: { id: itinerary.id, userId },
+            where: { id: itinerary.id },
+            include: { items: true },
         });
 
         const data = {
@@ -117,12 +131,18 @@ export class PrismaItineraryRepository implements IItineraryRepository {
                 orderInDay = 0;
             }
 
+            const existingItem = existing?.items?.find(
+                ei => ei.placeId === item.place.id && ei.day === item.day
+            );
+            const addedByUserId = item.addedBy?.id || existingItem?.addedByUserId || editorUserId || userId;
+
             await prisma.savedItineraryPlace.create({
                 data: {
                     itineraryId: itinerary.id,
                     day: item.day,
                     orderInDay: orderInDay++,
                     isDayTransition: item.isDayTransition || false,
+                    addedByUserId,
                     placeId: item.place.id,
                     placeName: item.place.name,
                     placeAddress: item.place.address,
@@ -147,6 +167,7 @@ export class PrismaItineraryRepository implements IItineraryRepository {
             include: {
                 items: {
                     orderBy: [{ day: "asc" }, { orderInDay: "asc" }],
+                    include: { addedBy: true },
                 },
             },
             orderBy: { createdAt: "desc" },
@@ -161,6 +182,7 @@ export class PrismaItineraryRepository implements IItineraryRepository {
             include: {
                 items: {
                     orderBy: [{ day: "asc" }, { orderInDay: "asc" }],
+                    include: { addedBy: true },
                 },
             },
         });

@@ -13,6 +13,7 @@ import { DayTabs } from "./DayTabs";
 import { PlaceSearchSection } from "./PlaceSearchSection";
 import { DailyScheduleList } from "./DailyScheduleList";
 import { RouteInfoCard } from "./RouteInfoCard";
+import { ShareJourneyModal } from "@/presentation/components/Share/ShareJourneyModal";
 
 interface NewJourneyModalProps {
     isOpen: boolean;
@@ -28,6 +29,7 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
     const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral | undefined>(undefined);
 
     const [focusedPlace, setFocusedPlace] = useState<Place | null>(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const { state, actions } = useJourneyPlanner(initialData, onClose);
 
@@ -102,12 +104,23 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
             <div className={`relative w-full max-w-6xl h-[85vh] bg-[var(--surface)] rounded-2xl shadow-2xl transform transition-all duration-300 flex overflow-hidden border border-[var(--border)] ${isOpen ? "scale-100" : "scale-95"}`}>
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 z-20 w-10 h-10 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-full flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                >
-                    <span className="material-symbols-outlined">close</span>
-                </button>
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+                    {initialData && (
+                        <button
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="w-10 h-10 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-full flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                            title="여정 공유"
+                        >
+                            <span className="material-symbols-outlined">group_add</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-full flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                    >
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
 
                 <JourneyMapPanel
                     currentDay={state.currentDay}
@@ -373,6 +386,15 @@ export const NewJourneyModal = ({ isOpen, onClose, initialData, readOnly = false
                     </div>
                 </div>
             </div>
+
+            {initialData && (
+                <ShareJourneyModal
+                    isOpen={isShareModalOpen}
+                    onClose={() => setIsShareModalOpen(false)}
+                    itineraryId={initialData.id}
+                    itineraryTitle={initialData.title}
+                />
+            )}
         </div>
     );
 };

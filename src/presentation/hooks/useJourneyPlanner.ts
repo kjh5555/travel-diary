@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSession, signIn } from "next-auth/react";
 import { Place } from "@/domain/types/place";
-import { Route, SavedItinerary, SavedItineraryPlace, TravelType } from "@/domain/types/itinerary";
+import { Route, SavedItinerary, SavedItineraryPlace, TravelType, PlaceAddedBy } from "@/domain/types/itinerary";
 import { GoogleRouteRepository } from "@/data/repositories/GoogleRouteRepository";
 import { CalculateRouteUseCase } from "@/domain/usecases/itinerary/CalculateRouteUseCase";
 
@@ -14,6 +14,7 @@ export interface WishlistItem {
     type: 'place';
     data: Place;
     routeToNext?: Route;
+    addedBy?: PlaceAddedBy;
 }
 
 export interface AirportItem {
@@ -72,10 +73,11 @@ export const useJourneyPlanner = (initialData?: SavedItinerary | null, onClose?:
                 .forEach(item => {
                     if (!newWishlists[item.day]) newWishlists[item.day] = [];
                     newWishlists[item.day].push({
-                        id: crypto.randomUUID(),
+                        id: item.id || crypto.randomUUID(),
                         type: 'place',
                         data: item.place,
-                        routeToNext: item.routeToNext
+                        routeToNext: item.routeToNext,
+                        addedBy: item.addedBy
                     });
                 });
             setDailyWishlists(newWishlists);

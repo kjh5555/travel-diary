@@ -52,17 +52,26 @@ export interface Itinerary {
 
 export interface PlaceMemory {
     text?: string;
-    images?: string[]; // Base64 strings
+    images?: string[];
     timestamp?: string;
     isLiked?: boolean;
 }
 
+export interface PlaceAddedBy {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+}
+
 export interface SavedItineraryPlace {
+    id?: string;
     place: Place;
     routeToNext?: Route;
     day: number;
     isDayTransition?: boolean;
     memory?: PlaceMemory;
+    addedBy?: PlaceAddedBy;
 }
 
 export type TravelType = 'domestic' | 'international';
@@ -83,4 +92,20 @@ export interface SavedItinerary {
 
 export interface IRouteRepository {
     getRoute(origin: Place, destination: Place, mode: string): Promise<Route | null>;
+}
+
+export interface SharedItineraryInfo {
+    isShared: boolean;
+    sharedBy?: {
+        id: string;
+        name: string | null;
+        email: string | null;
+        image: string | null;
+    };
+    permission?: 'VIEW' | 'EDIT';
+    sharedAt?: string;
+}
+
+export interface SavedItineraryWithShare extends SavedItinerary {
+    shareInfo?: SharedItineraryInfo;
 }

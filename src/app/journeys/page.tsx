@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { SavedItinerary } from "@/domain/types/itinerary";
+import { SavedItinerary, SavedItineraryWithShare } from "@/domain/types/itinerary";
 import { groupItinerariesByStatus, getItineraryStatus } from "@/domain/utils/dateUtils";
 import { NewJourneyModal } from "@/presentation/components/NewJourney/NewJourneyModal";
 import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePhoto";
@@ -22,12 +22,12 @@ const TABS: { label: string; value: TabType }[] = [
 export default function JourneysPage() {
     const router = useRouter();
     const { data: session } = useSession();
-    const [itineraries, setItineraries] = useState<SavedItinerary[]>([]);
+    const [itineraries, setItineraries] = useState<SavedItineraryWithShare[]>([]);
     const [selectedTab, setSelectedTab] = useState<TabType>('all');
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedItinerary, setSelectedItinerary] = useState<SavedItinerary | null>(null);
+    const [selectedItinerary, setSelectedItinerary] = useState<SavedItineraryWithShare | null>(null);
 
     const loadItineraries = async () => {
         if (!session?.user?.id) {
@@ -38,13 +38,25 @@ export default function JourneysPage() {
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/itineraries');
-            if (!response.ok) {
-                setItineraries([]);
-                return;
-            }
-            const result: SavedItinerary[] = await response.json();
-            setItineraries(result.reverse());
+            const [myResponse, sharedResponse] = await Promise.all([
+                fetch('/api/itineraries'),
+                fetch('/api/itineraries/shared')
+            ]);
+
+            const myItineraries: SavedItineraryWithShare[] = myResponse.ok
+                ? (await myResponse.json()).map((it: SavedItinerary) => ({ ...it, shareInfo: undefined }))
+                : [];
+
+            const sharedItineraries: SavedItineraryWithShare[] = sharedResponse.ok
+                ? await sharedResponse.json()
+                : [];
+
+            const allItineraries = [...myItineraries, ...sharedItineraries];
+            allItineraries.sort((a, b) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+
+            setItineraries(allItineraries);
         } catch (error) {
             console.error("Failed to load itineraries:", error);
             setItineraries([]);
@@ -59,8 +71,8 @@ export default function JourneysPage() {
 
     const { ongoing, upcoming, past } = groupItinerariesByStatus(itineraries);
 
-    const getFilteredItineraries = (): SavedItinerary[] => {
-        let filtered: SavedItinerary[];
+    const getFilteredItineraries = (): SavedItineraryWithShare[] => {
+        let filtered: SavedItineraryWithShare[];
 
         switch (selectedTab) {
             case 'all':
@@ -90,7 +102,7 @@ export default function JourneysPage() {
         return filtered;
     };
 
-    const handleOpenItinerary = (itinerary: SavedItinerary) => {
+    const handleOpenItinerary = (itinerary: SavedItineraryWithShare) => {
         const status = getItineraryStatus(itinerary.startDate, itinerary.endDate);
         if (status === 'past' || status === 'ongoing') {
             router.push(`/journeys/${itinerary.id}`);
@@ -202,7 +214,7 @@ export default function JourneysPage() {
     );
 }
 
-function JourneyCard({ itinerary, onClick }: { itinerary: SavedItinerary; onClick: () => void }) {
+function JourneyCard({ itinerary, onClick }: { itinerary: SavedItineraryWithShare; onClick: () => void }) {
     const status = getItineraryStatus(itinerary.startDate, itinerary.endDate);
     const startDate = new Date(itinerary.startDate);
     const endDate = new Date(itinerary.endDate);
@@ -271,20 +283,32 @@ function JourneyCard({ itinerary, onClick }: { itinerary: SavedItinerary; onClic
                     interval={5000}
                     includeMemoryPhotos={status === 'past'}
                 />
-                <div className="absolute top-3 left-3 md:hidden">
+                <div className="absolute top-3 left-3 md:hidden flex flex-col gap-1">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${badge.color} border shadow-sm`}>
                         {badge.text}
                     </span>
+                    {itinerary.shareInfo?.isShared && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200 shadow-sm">
+                            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>group</span>
+                            공유
+                        </span>
+                    )}
                 </div>
             </div>
 
             <div className="flex flex-col justify-center gap-2 p-5 flex-1">
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <span className={`hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${badge.color} ${badge.darkColor} border`}>
                                 {badge.text}
                             </span>
+                            {itinerary.shareInfo?.isShared && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800">
+                                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>group</span>
+                                    {itinerary.shareInfo.sharedBy?.name || '친구'}님이 공유
+                                </span>
+                            )}
                             <span className="text-xs font-medium text-[var(--muted-foreground)] flex items-center gap-1">
                                 <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{badge.icon}</span>
                                 {badge.timeText}

@@ -7,6 +7,7 @@ import { MapContainer } from "../Map/MapContainer";
 import { PhotoGalleryModal } from "./PhotoGalleryModal";
 import { ImageCropperModal } from "@/presentation/components/common/ImageCropperModal";
 import { GooglePlacePhoto } from "@/presentation/components/Place/GooglePlacePhoto";
+import { ShareJourneyModal } from "@/presentation/components/Share/ShareJourneyModal";
 
 interface CompletedJourneyDetailProps {
     itinerary: SavedItinerary;
@@ -33,6 +34,7 @@ export const CompletedJourneyDetail = ({
     const [tempOriginalImage, setTempOriginalImage] = useState<string | null>(null);
     const [cropStep, setCropStep] = useState<'header' | 'thumbnail'>('header');
     const [tempHeaderImage, setTempHeaderImage] = useState<string | null>(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const markersRef = useRef<google.maps.Marker[]>([]);
     const polylinesRef = useRef<google.maps.Polyline[]>([]);
@@ -301,13 +303,22 @@ export const CompletedJourneyDetail = ({
                                     <span className="text-base font-medium">사진 {totalPhotos}장</span>
                                 </div>
                             </div>
-                            <button
-                                onClick={onBack}
-                                className="flex items-center gap-2 bg-[var(--surface)] hover:bg-[var(--secondary)] px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all border border-[var(--border)]"
-                            >
-                                <span className="material-symbols-outlined text-sm">arrow_back</span>
-                                <span>목록으로</span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsShareModalOpen(true)}
+                                    className="flex items-center gap-2 bg-[var(--surface)] hover:bg-[var(--secondary)] px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all border border-[var(--border)]"
+                                >
+                                    <span className="material-symbols-outlined text-sm">group_add</span>
+                                    <span>공유</span>
+                                </button>
+                                <button
+                                    onClick={onBack}
+                                    className="flex items-center gap-2 bg-[var(--surface)] hover:bg-[var(--secondary)] px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all border border-[var(--border)]"
+                                >
+                                    <span className="material-symbols-outlined text-sm">arrow_back</span>
+                                    <span>목록으로</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div className="sticky top-0 z-40 bg-[var(--background)]/95 backdrop-blur-sm border-b border-[var(--border)] mb-8 pt-2">
@@ -563,6 +574,13 @@ export const CompletedJourneyDetail = ({
                     </div>
                 </main>
             </div>
+
+            <ShareJourneyModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                itineraryId={itinerary.id}
+                itineraryTitle={itinerary.title}
+            />
         </>
     );
 };

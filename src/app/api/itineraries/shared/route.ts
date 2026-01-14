@@ -14,7 +14,7 @@ export async function GET() {
         }
 
         const useCase = new GetSharedJourneysUseCase(repository);
-        const sharedJourneys = await useCase.executeSharedWithMe(session.user.id);
+        const sharedJourneys = await useCase.executeSharedWithMeFull(session.user.id);
 
         return NextResponse.json(sharedJourneys);
     } catch (error) {

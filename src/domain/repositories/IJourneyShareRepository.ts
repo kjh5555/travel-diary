@@ -1,5 +1,5 @@
 import { JourneyShare, SharePermission, TripComment, TripPhoto, SharedJourneyInfo } from "@/domain/types/friend";
-import { SavedItinerary } from "@/domain/types/itinerary";
+import { SavedItinerary, SavedItineraryWithShare } from "@/domain/types/itinerary";
 
 export interface IJourneyShareRepository {
     shareJourney(itineraryId: string, ownerId: string, sharedWithId: string, permission: SharePermission): Promise<JourneyShare>;
@@ -8,6 +8,7 @@ export interface IJourneyShareRepository {
     
     getSharesForJourney(itineraryId: string, ownerId: string): Promise<JourneyShare[]>;
     getSharedWithMe(userId: string): Promise<SharedJourneyInfo[]>;
+    getSharedWithMeFull(userId: string): Promise<SavedItineraryWithShare[]>;
     getSharedJourney(itineraryId: string, userId: string): Promise<SavedItinerary | null>;
     hasAccess(itineraryId: string, userId: string): Promise<{ hasAccess: boolean; permission: SharePermission | null }>;
     
